@@ -11,7 +11,7 @@ export default class extends React.Component {
   state = {
     isLoading: true,
     witchValue: false,
-    inPlace: false,
+    inPlace: true,
     cnt: 3,
     latitude: null,
     longitude: null,
@@ -21,11 +21,9 @@ export default class extends React.Component {
   };
   watchId = (null: ?number);
   toggleSwitch = value =>{ this.setState({ switchValue: value})};
-  inPlaceChange = value =>{ this.setState({ inPlace: value})};
 
 
   getLocation = async () => {
-    const { status } = await Location.requestPermissionsAsync();
 
     try {
       await Location.requestForegroundPermissionsAsync();
@@ -87,9 +85,6 @@ export default class extends React.Component {
               <Text>경도 : {this.state.longitude}</Text>
             </View>}
           <View style={styles.test}>
-            <Switch style={{ marginTop: 31 }} onValueChange={this.inPlaceChange} value={this.state.inPlace}/>
-            <Text style={styles.active_text}>{this.state.inPlace ? '어린이 보호 구역 안' : '어린이 보호 구역 밖'}</Text>
-            <Text style={styles.active_text}>나중에는 사용자의 위치에 따라 변경됨 (현재는 임시로 스위치 사용)</Text>
           </View>
         </View>
       );
