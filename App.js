@@ -2,42 +2,94 @@ import Loading from  "./Loading";
 import * as Location from "expo-location";
 import React, {Component, useState, useEffect } from 'react';
 import {Text, View, Button, StyleSheet, Image, Switch, Alert} from 'react-native';
+import axios from 'axios'
+import { getDistance } from 'geolib';
 
 const LOCATION_TRACKING = 'location-tracking';
 
 export default class extends React.Component {
+  componentDidMount() {
+    this.getLocation();
+  }
   state = {
     isLoading: true,
     witchValue: false,
     inPlace: true,
-    cnt: 3,
     latitude: null,
     longitude: null,
     isLoading: true,
-    placeName: "양덕초등학교",
+    placeId: 0,
+    cnt: 3,
     time: 0,
   };
-  watchId = (null: ?number);
+  placeInfo = [
+    {
+      name: "양덕초등학교",
+      lat: 12.313,
+      lon: 12.124,
+    },
+    {
+      name: "와랩",
+      lat: 12.313,
+      lon: 12.124,
+    },
+  ];
   toggleSwitch = value =>{ this.setState({ switchValue: value})};
 
   sendPlaceId = () => {
-    fetch("http://localhost:8080/capstone18z/rest/read-placeid",{
-      method: 'POST',
+    console.log("check");
+    /*axios({
+            method: 'GET',
+            url: "http://localhost:8080/capstone18z/rest/read-schoolzone",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+              },
+          }).then(function (response) {
+            console.log(response)
+          }) .catch(function (error) {
+              console.log("!!!!!!!!!!!!!ERROR!!!!!!!!!!!\n")
+            console.log(error);
+          });
+          */
+  /*axios({
+    "method": "GET",
+    "url": "http://localhost:8080/capstone18z/rest/read-schoolzone",
+    "headers": {
+      "Content-Type": "application/octet-stream",
+      "Content-Length": "quotes15.p.rapidapi.com",
+      "Date": "Wed, 05 May 2021 11:08:52 GMT",
+      "Keep-Alive": "timeout=20",
+      "Connetion": "keep-alive",
+    }, "params": {
+    }
+  })
+    .then((response) => {
+      console.log("hey");
+    })
+    .catch((error) => {
+      console.log(error)
+    })*/
+  }
+  /*sendPlaceId = () => {
+    fetch("http://localhost:8080/capstone18z/rest/read-schoolzone",{
+      method: 'GET',
       headers: {
         Accept: 'application/json',
         'Content-Type' : 'application/json'
       },
       body: JSON.stringify({
-        "placeId": 1,
+        //"placeId": 1,
+        //현재 시간에서 + 시간 만에 가지고 오기
       })
     }).then((response) =>
       response.json()).then((json) => {
+        console.log("success!");
         return data;
       }).catch((error) => {
         console.error(error);
       });
-    console.log("placeId : send succeed");
-  };
+  };*/
 
   getLocation = async () => {
 
@@ -63,9 +115,6 @@ export default class extends React.Component {
       Alert.alert("오류", "앱 실행을 위해 위치 정보가 필요합니다. 위치 권한을 설정해주세요.");
     }
   };
-  componentDidMount() {
-    this.getLocation();
-  }
 
   render() {
     const { isLoading } = this.state;
@@ -79,7 +128,7 @@ export default class extends React.Component {
           {this.state.switchValue && this.state.inPlace ?
             <View>
               <View style={styles.alert_place}>
-                <Text style={styles.placeName}>"{this.state.placeName}"</Text>
+                <Text style={styles.placeName}>"{this.placeInfo[this.state.placeId].name}"</Text>
                 <Text style={styles.text}>어린이 보호 구역입니다.</Text>
               </View>
               <View style={styles.alert_num}>

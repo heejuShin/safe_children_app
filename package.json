@@ -8,12 +8,15 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "expo": "~41.0.0",
     "expo-background-fetch": "~9.1.0",
     "expo-location": "~12.0.4",
     "expo-permissions": "~12.0.1",
     "expo-status-bar": "~1.0.4",
     "expo-task-manager": "~9.1.0",
+    "geolib": "^3.3.1",
+    "node": "^16.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-41.0.0.tar.gz",
