@@ -10,6 +10,7 @@ const LOCATION_TRACKING = 'location-tracking';
 export default class extends React.Component {
   componentDidMount() {
     this.getLocation();
+    this.getPlaceInfo();
   }
   state = {
     isLoading: true,
@@ -35,12 +36,10 @@ export default class extends React.Component {
     },
   ];
   toggleSwitch = value =>{ this.setState({ switchValue: value})};
-
-  sendPlaceId = () => {
-    console.log("check");
-    /*axios({
+  getPlaceInfo = () => {
+    axios({
             method: 'GET',
-            url: "http://localhost:8080/capstone18z/rest/read-schoolzone",
+            url: "https://capstone18z.herokuapp.com/rest/read-schoolzone",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                  "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -48,48 +47,12 @@ export default class extends React.Component {
           }).then(function (response) {
             console.log(response)
           }) .catch(function (error) {
-              console.log("!!!!!!!!!!!!!ERROR!!!!!!!!!!!\n")
+              console.log("can not access page\n")
             console.log(error);
           });
-          */
-  /*axios({
-    "method": "GET",
-    "url": "http://localhost:8080/capstone18z/rest/read-schoolzone",
-    "headers": {
-      "Content-Type": "application/octet-stream",
-      "Content-Length": "quotes15.p.rapidapi.com",
-      "Date": "Wed, 05 May 2021 11:08:52 GMT",
-      "Keep-Alive": "timeout=20",
-      "Connetion": "keep-alive",
-    }, "params": {
-    }
-  })
-    .then((response) => {
-      console.log("hey");
-    })
-    .catch((error) => {
-      console.log(error)
-    })*/
   }
-  /*sendPlaceId = () => {
-    fetch("http://localhost:8080/capstone18z/rest/read-schoolzone",{
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type' : 'application/json'
-      },
-      body: JSON.stringify({
-        //"placeId": 1,
-        //현재 시간에서 + 시간 만에 가지고 오기
-      })
-    }).then((response) =>
-      response.json()).then((json) => {
-        console.log("success!");
-        return data;
-      }).catch((error) => {
-        console.error(error);
-      });
-  };*/
+  sendPlaceId = () => {
+  }
 
   getLocation = async () => {
 
