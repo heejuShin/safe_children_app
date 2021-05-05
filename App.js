@@ -1,7 +1,5 @@
 import Loading from  "./Loading";
 import * as Location from "expo-location";
-import * as TaskManager from 'expo-task-manager';
-import * as BackgroundFetch from 'expo-background-fetch';
 import React, {Component, useState, useEffect } from 'react';
 import {Text, View, Button, StyleSheet, Image, Switch, Alert} from 'react-native';
 
@@ -22,6 +20,24 @@ export default class extends React.Component {
   watchId = (null: ?number);
   toggleSwitch = value =>{ this.setState({ switchValue: value})};
 
+  sendPlaceId = () => {
+    fetch("http://localhost:8080/capstone18z/rest/read-placeid",{
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type' : 'application/json'
+      },
+      body: JSON.stringify({
+        "placeId": 1,
+      })
+    }).then((response) =>
+      response.json()).then((json) => {
+        return data;
+      }).catch((error) => {
+        console.error(error);
+      });
+    console.log("placeId : send succeed");
+  };
 
   getLocation = async () => {
 
@@ -85,6 +101,7 @@ export default class extends React.Component {
               <Text>경도 : {this.state.longitude}</Text>
             </View>}
           <View style={styles.test}>
+           <Button title="Rest Api 보내기" onPress={this.sendPlaceId}/>
           </View>
         </View>
       );
