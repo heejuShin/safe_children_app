@@ -20,9 +20,10 @@ export default class extends React.Component {
     longitude: null,
     isLoading: true,
     placeId: 0,
-    cnt: 3,
+    cnt: 4,
     time: 0,
   };
+  num = 3;
   placeInfo = [
     {
       name: "양덕초등학교",
@@ -35,7 +36,7 @@ export default class extends React.Component {
       lon: 12.124,
     },
   ];
-  toggleSwitch = value =>{ this.setState({ switchValue: value})};
+  toggleSwitch = value =>{ console.log(this.state.cnt); this.setState({ switchValue: value})};
   calculateDistance = (latitudeC, longitudeC) => {
         let distance = Geolib.getDistance(
           {
@@ -48,9 +49,12 @@ export default class extends React.Component {
         });
         if(distance<300) {
           //school zone evernt => 지속적
+          getNum(3); //여기에 sectionId
         }
         if(distance<500){
           //section 이벤트 (이미 가지고 있는지 확인) => 일시적
+          getSectionByPlace(3); //여기에 placeId
+          getReceiverByPlace(3); //여기에 placeId
         }
         console.log(
             'You are ',distance,'meters away from 51.525, 7.4575',
@@ -68,9 +72,9 @@ export default class extends React.Component {
                  "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
               },
           }).then(function (response) {
-            console.log(response)
+            //console.log(response)
           }) .catch(function (error) {
-              console.log("can not access page\n")
+              console.log("can not get school zone info\n")
             console.log(error);
           });
   }
@@ -78,15 +82,15 @@ export default class extends React.Component {
   getSectionByPlace = (placeId) => {
     axios({
            method: 'GET',
-           url: "https://capstone18z.herokuapp.com/rest/section/",placeId,
+           url: "https://capstone18z.herokuapp.com/rest/section/"+placeId,
            headers: {
                "Content-Type": "application/x-www-form-urlencoded",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           console.log(response)
+           //console.log(response)
          }) .catch(function (error) {
-             console.log("!!!!!!!!!!!!!ERROR!!!!!!!!!!!\n")
+             console.log("[error] can not get sectionInfo.\n")
            console.log(error);
          });
   }
@@ -94,31 +98,31 @@ export default class extends React.Component {
   getReceiverByPlace = (placeId) => {
     axios({
            method: 'GET',
-           url: "https://capstone18z.herokuapp.com/rest/receiver/",placeId,
+           url: "https://capstone18z.herokuapp.com/rest/receiver/"+placeId,
            headers: {
                "Content-Type": "application/x-www-form-urlencoded",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           console.log(response)
+           //console.log(response)
          }) .catch(function (error) {
-             console.log("!!!!!!!!!!!!!ERROR!!!!!!!!!!!\n")
+             console.log("[error] can not get receiver info.\n")
            console.log(error);
          });
   }
   //어린이 숫자 받아오기 (300M안에서 계속)
-  getNum = (placeID, sectionId) => {
+  getNum = (sectionId) => {
     axios({
            method: 'GET',
-           url: "https://capstone18z.herokuapp.com/rest/section/children/",placeId,
+           url: "https://capstone18z.herokuapp.com/rest/section/children/"+sectionId,
            headers: {
                "Content-Type": "application/x-www-form-urlencoded",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           console.log(response)
+           //console.log(response)
          }) .catch(function (error) {
-             console.log("!!!!!!!!!!!!!ERROR!!!!!!!!!!!\n")
+             console.log("[error] can not get children num.\n")
            console.log(error);
          });
   }
@@ -136,9 +140,9 @@ export default class extends React.Component {
         {accuracy:Location.Accuracy.High, timeInterval: 5000, distanceInterval: 0},
         (loc) => {
           const { isLoading } = this.state;
-          console.log(
+          /*console.log(
             `${new Date(Date.now()).toLocaleString()}:`+ loc.coords.latitude +" & "+ loc.coords.longitude
-          );
+          );*/
           this.calculateDistance(loc.coords.latitude, loc.coords.longitude);
           this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude});
         }
@@ -183,7 +187,7 @@ export default class extends React.Component {
               <Text>경도 : {this.state.longitude}</Text>
             </View>}
           <View style={styles.test}>
-           <Button title="Rest Api 보내기" onPress={this.sendPlaceId}/>
+           <Button title="Rest Api 보내기"/>
           </View>
         </View>
       );
