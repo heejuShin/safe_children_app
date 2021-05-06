@@ -2,8 +2,8 @@ import Loading from  "./Loading";
 import * as Location from "expo-location";
 import React, {Component, useState, useEffect } from 'react';
 import {Text, View, Button, StyleSheet, Image, Switch, Alert} from 'react-native';
-import axios from 'axios'
-import { getDistance } from 'geolib';
+import axios from 'axios';
+import * as Geolib from 'geolib';
 
 const LOCATION_TRACKING = 'location-tracking';
 
@@ -14,7 +14,7 @@ export default class extends React.Component {
   }
   state = {
     isLoading: true,
-    witchValue: false,
+    switchValue: false,
     inPlace: true,
     latitude: null,
     longitude: null,
@@ -36,10 +36,33 @@ export default class extends React.Component {
     },
   ];
   toggleSwitch = value =>{ this.setState({ switchValue: value})};
+  calculateDistance = (latitudeC, longitudeC) => {
+        let distance = Geolib.getDistance(
+          {
+            latitude: latitudeC,
+            longitude: longitudeC,
+          },
+          {
+            latitude: 5.124, //여기에 비교 값
+            longitude: 7.457, //여기에 비교 값
+        });
+        if(distance<300) {
+          //school zone evernt => 지속적
+        }
+        if(distance<500){
+          //section 이벤트 (이미 가지고 있는지 확인) => 일시적
+        }
+        console.log(
+            'You are ',distance,'meters away from 51.525, 7.4575',
+        );
+    };
+
+  //Rest API
+  //어린이 보호구역 전체 정보 받아오기
   getPlaceInfo = () => {
     axios({
             method: 'GET',
-            url: "https://capstone18z.herokuapp.com/rest/read-schoolzone",
+            url: "https://capstone18z.herokuapp.com/rest/schoolzone",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                  "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -51,7 +74,53 @@ export default class extends React.Component {
             console.log(error);
           });
   }
-  sendPlaceId = () => {
+  //Place Id로 section 받아오기 (500M)
+  getSectionByPlace = (placeId) => {
+    axios({
+           method: 'GET',
+           url: "https://capstone18z.herokuapp.com/rest/section/",placeId,
+           headers: {
+               "Content-Type": "application/x-www-form-urlencoded",
+                "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+             },
+         }).then(function (response) {
+           console.log(response)
+         }) .catch(function (error) {
+             console.log("!!!!!!!!!!!!!ERROR!!!!!!!!!!!\n")
+           console.log(error);
+         });
+  }
+  //Place Id로 수신기 받아오기 (300M ? 500M?)
+  getReceiverByPlace = (placeId) => {
+    axios({
+           method: 'GET',
+           url: "https://capstone18z.herokuapp.com/rest/receiver/",placeId,
+           headers: {
+               "Content-Type": "application/x-www-form-urlencoded",
+                "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+             },
+         }).then(function (response) {
+           console.log(response)
+         }) .catch(function (error) {
+             console.log("!!!!!!!!!!!!!ERROR!!!!!!!!!!!\n")
+           console.log(error);
+         });
+  }
+  //어린이 숫자 받아오기 (300M안에서 계속)
+  getNum = (placeID, sectionId) => {
+    axios({
+           method: 'GET',
+           url: "https://capstone18z.herokuapp.com/rest/section/children/",placeId,
+           headers: {
+               "Content-Type": "application/x-www-form-urlencoded",
+                "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+             },
+         }).then(function (response) {
+           console.log(response)
+         }) .catch(function (error) {
+             console.log("!!!!!!!!!!!!!ERROR!!!!!!!!!!!\n")
+           console.log(error);
+         });
   }
 
   getLocation = async () => {
@@ -70,6 +139,7 @@ export default class extends React.Component {
           console.log(
             `${new Date(Date.now()).toLocaleString()}:`+ loc.coords.latitude +" & "+ loc.coords.longitude
           );
+          this.calculateDistance(loc.coords.latitude, loc.coords.longitude);
           this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude});
         }
       );
