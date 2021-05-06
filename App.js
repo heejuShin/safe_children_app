@@ -36,7 +36,7 @@ export default class extends React.Component {
       lon: 12.124,
     },
   ];
-  toggleSwitch = value =>{ console.log(this.state.cnt); this.setState({ switchValue: value})};
+  toggleSwitch = value =>{this.setState({ switchValue: value})};
   calculateDistance = (latitudeC, longitudeC) => {
         let distance = Geolib.getDistance(
           {
@@ -57,7 +57,7 @@ export default class extends React.Component {
           getReceiverByPlace(3); //여기에 placeId
         }
         console.log(
-            'You are ',distance,'meters away from 51.525, 7.4575',
+            'You are ',distance,'meters away from 51.525, 7.4575!',
         );
     };
 
