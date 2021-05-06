@@ -19,7 +19,10 @@ export default class extends React.Component {
     latitude: null,
     longitude: null,
     isLoading: true,
-    placeId: 0,
+    placeId: 3,
+    sectionId: 4,
+    getReceiverInfo: false,
+    getSectionInfo: false,
     cnt: 4,
     time: 0,
   };
@@ -44,20 +47,20 @@ export default class extends React.Component {
             longitude: longitudeC,
           },
           {
-            latitude: 5.124, //여기에 비교 값
-            longitude: 7.457, //여기에 비교 값
+            latitude: this.state.latitude, //여기에 비교 값
+            longitude: this.state.longitude, //여기에 비교 값
         });
         if(distance<300) {
           //school zone evernt => 지속적
-          getNum(3); //여기에 sectionId
+          this.getNum(this.state.sectionId); //여기에 sectionId
         }
         if(distance<500){
           //section 이벤트 (이미 가지고 있는지 확인) => 일시적
-          getSectionByPlace(3); //여기에 placeId
-          getReceiverByPlace(3); //여기에 placeId
+          this.getSectionByPlace(this.state.placeId);
+          this.getReceiverByPlace(this.state.placeId);
         }
         console.log(
-            'You are ',distance,'meters away from 51.525, 7.4575!',
+            'You are '+distance+' meters away from '+this.state.latitude+','+this.state.longitude,
         );
     };
 
@@ -121,6 +124,7 @@ export default class extends React.Component {
              },
          }).then(function (response) {
            //console.log(response)
+           this.setState({ num : 3 });
          }) .catch(function (error) {
              console.log("[error] can not get children num.\n")
            console.log(error);
