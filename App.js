@@ -23,7 +23,7 @@ export default class extends React.Component {
     sectionId: 4,
     getReceiverInfo: false,
     getSectionInfo: false,
-    cnt: 4,
+    cnt: 3,
     time: 0,
   };
   num = 3;
