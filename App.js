@@ -27,6 +27,7 @@ export default class extends React.Component {
     time: 0,
   };
   num = 3;
+  //상범에게 -> 이 부분을 내장 저장 하면 돼!
   placeInfo = [
     {
       name: "양덕초등학교",
