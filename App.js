@@ -11,6 +11,7 @@ export default class extends React.Component {
   componentDidMount() {
     this.getLocation();
     this.getPlaceInfo();
+    //this.getSettingInfo();
   }
   state = {
     isLoading: true,
@@ -19,8 +20,8 @@ export default class extends React.Component {
     latitude: null,
     longitude: null,
     isLoading: true,
-    placeId: 3,
-    sectionId: 4,
+    placeId: 1,
+    sectionId: 1,
     getReceiverInfo: false,
     getSectionInfo: false,
     cnt: 3,
@@ -60,14 +61,14 @@ export default class extends React.Component {
           this.getSectionByPlace(this.state.placeId);
           this.getReceiverByPlace(this.state.placeId);
         }
-        console.log(
+        /*console.log(
             'You are '+distance+' meters away from '+this.state.latitude+','+this.state.longitude,
-        );
+        );*/
     };
 
   //Rest API
-  //어린이 보호구역 전체 정보 받아오기
-  getPlaceInfo = () => {
+  //setting 정보 받아오기
+  getSettingInfo = () => {
     axios({
             method: 'GET',
             url: "https://capstone18z.herokuapp.com/rest/schoolzone",
@@ -79,7 +80,23 @@ export default class extends React.Component {
             //console.log(response)
           }) .catch(function (error) {
               console.log("can not get school zone info\n")
-            console.log(error);
+            //console.log(error);
+          });
+  }
+  //어린이 보호구역 전체 정보 받아오기
+  getPlaceInfo = () => {
+    axios({
+            method: 'GET',
+            url: "https://capstone18z.herokuapp.com/rest/setting",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+              },
+          }).then(function (response) {
+            console.log(response)
+          }) .catch(function (error) {
+              console.log("can not get setting info\n")
+            //console.log(error);
           });
   }
   //Place Id로 section 받아오기 (500M)
@@ -94,8 +111,8 @@ export default class extends React.Component {
          }).then(function (response) {
            //console.log(response)
          }) .catch(function (error) {
-             console.log("[error] can not get sectionInfo.\n")
-           console.log(error);
+           console.log("[error] can not get sectionInfo.\n")
+           //console.log(error);
          });
   }
   //Place Id로 수신기 받아오기 (300M ? 500M?)
@@ -110,12 +127,13 @@ export default class extends React.Component {
          }).then(function (response) {
            //console.log(response)
          }) .catch(function (error) {
-             console.log("[error] can not get receiver info.\n")
-           console.log(error);
+             //console.log("[error] can not get receiver info.\n")
+           //console.log(error);
          });
   }
   //어린이 숫자 받아오기 (300M안에서 계속)
   getNum = (sectionId) => {
+    console.log("가져옵니다");
     axios({
            method: 'GET',
            url: "https://capstone18z.herokuapp.com/rest/section/children/"+sectionId,
@@ -124,8 +142,8 @@ export default class extends React.Component {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           //console.log(response)
-           this.setState({ num : 3 });
+           console.log(response)
+           //this.setState({ num: 3});
          }) .catch(function (error) {
              console.log("[error] can not get children num.\n")
            console.log(error);
@@ -192,7 +210,7 @@ export default class extends React.Component {
               <Text>경도 : {this.state.longitude}</Text>
             </View>}
           <View style={styles.test}>
-           <Button title="Rest Api 보내기"/>
+           <Button title="Test용 버튼"/>
           </View>
         </View>
       );
