@@ -4,7 +4,8 @@ import { StyleSheet, Text, View } from "react-native";
 export default function Loading() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>로딩 중 입니다</Text>
+      <Text style={styles.text}>Safe Children</Text>
+      <Text>presented by 엠투테크</Text>
     </View>
   );
 }
@@ -18,6 +19,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffe896"
   },
   text: {
+    fontWeight: "bold",
     color: "#2c2c2c",
     fontSize: 30
   }
