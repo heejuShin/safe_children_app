@@ -58,9 +58,9 @@ export default class extends React.Component {
         }
         if(distance<500){
           //section 이벤트 (이미 가지고 있는지 확인) => 일시적
-          //{this.state.getSectionInfo} ? console.log("없음") : console.log("있음");
-          //{this.state.getSectionInfo} ?  : this.getSectionByPlace(this.state.placeId);
-          //{this.state.getReceiverInfo} ?  : this.getPlaceInfo(this.state.placeId);
+          //this.state.getSectionInfo ? console.log("없음") : console.log("있음");
+          this.state.getSectionInfo ? console.log() : this.getSectionByPlace(this.state.placeId);
+          this.state.getReceiverInfo ? console.log() : this.getPlaceInfo(this.state.placeId);
           //this.getReceiverByPlace(this.state.placeId);
         }
         /*console.log(
@@ -98,6 +98,7 @@ export default class extends React.Component {
               },
           }).then(function (response) {
             //console.log(response)
+            self.setState({getReceivernInfo: true});
           }) .catch(function (error) {
               console.log("can not get setting info\n")
             //console.log(error);
@@ -137,6 +138,7 @@ export default class extends React.Component {
                },
              ],
            */
+           console.log("hehe");
            self.setState({getSectionInfo: true});
          }) .catch(function (error) {
            console.log("[error] can not get sectionInfo.\n")
@@ -207,7 +209,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading } = this.state.isLoading;
     return isLoading ? <Loading />
     : (
         <View style={styles.background}>
