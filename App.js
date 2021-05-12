@@ -36,7 +36,7 @@ export default class extends React.Component {
       lon: 12.124,
     },
     {
-      name: "와랩",
+      name: "양덕초등학교",
       lat: 12.313,
       lon: 12.124,
     },
@@ -59,10 +59,15 @@ export default class extends React.Component {
         if(distance<500){
           //section 이벤트 (이미 가지고 있는지 확인) => 일시적
           //this.state.getSectionInfo ? console.log("없음") : console.log("있음");
-          this.state.getSectionInfo ? console.log() : this.getSectionByPlace(this.state.placeId);
-          this.state.getReceiverInfo ? console.log() : this.getPlaceInfo(this.state.placeId);
+          this.getSectionByPlace(this.state.placeId);
+          this.getReceiverByPlace(this.state.placeId);
+          //this.state.getSectionInfo ? console.log() : this.getSectionByPlace(this.state.placeId);
+          //this.state.getReceiverInfo ? console.log() : this.getReceiverInfo(this.state.placeId);
           //this.getReceiverByPlace(this.state.placeId);
         }
+        //section 나갔는지 확인
+        //나갔으면 place 나갔는지 확인
+        //place 안나갔으면 어느 섹션 속했는지
         /*console.log(
             'You are '+distance+' meters away from '+this.state.latitude+','+this.state.longitude,
         );*/
@@ -138,7 +143,6 @@ export default class extends React.Component {
                },
              ],
            */
-           console.log("hehe");
            self.setState({getSectionInfo: true});
          }) .catch(function (error) {
            console.log("[error] can not get sectionInfo.\n")
@@ -156,8 +160,8 @@ export default class extends React.Component {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           console.log(response);
-           console.log("한번만 받야야돼~~");
+           //console.log(response);
+           //[{"id":3,"serialNum":"receiver_1","placeId":1,"latitude":36.0929,"longitude":129.388,"radius":50,"regDate":1620231390000,"editDate":1620491816000},{"id":4,"serialNum":"receiver_2","placeId":1,"latitude":36.0929,"longitude":129.385,"radius":50,"regDate":1618759295000,"editDate":1618759295000}]
            self.setState({getReceiverInfo: true});
          }) .catch(function (error) {
              //console.log("[error] can not get receiver info.\n")
@@ -195,9 +199,9 @@ export default class extends React.Component {
         {accuracy:Location.Accuracy.High, timeInterval: 5000, distanceInterval: 0},
         (loc) => {
           const { isLoading } = this.state;
-          /*console.log(
+          console.log(
             `${new Date(Date.now()).toLocaleString()}:`+ loc.coords.latitude +" & "+ loc.coords.longitude
-          );*/
+          );
           this.calculateDistance(loc.coords.latitude, loc.coords.longitude);
           this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude});
         }
@@ -238,11 +242,8 @@ export default class extends React.Component {
               </View>
             </View>
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Text>위도 : {this.state.latitude}</Text>
-              <Text>경도 : {this.state.longitude}</Text>
             </View>}
           <View style={styles.test}>
-           <Button title="Test용 버튼"/>
           </View>
         </View>
       );
