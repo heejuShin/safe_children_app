@@ -8,10 +8,10 @@ import * as Geolib from 'geolib';
 const LOCATION_TRACKING = 'location-tracking';
 
 export default class extends React.Component {
-  componentDidMount() {
+  async componentDidMount() {
+    var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
     this.getLocation(); //지속적으로 정보 받아옴
     this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
-    this.getSettingInfo(); //setting 정보를 받아옴
   }
   state = {
     isLoading: true, //로딩페이지를 불러오기 위한 변수
@@ -33,7 +33,7 @@ export default class extends React.Component {
     clean_date: null
 
   };
-  num = 3;
+
   //상범에게 -> 이 부분을 내장 저장 하면 돼!
   placeInfo = [
     {
@@ -81,9 +81,9 @@ export default class extends React.Component {
 
   //Rest API
   //setting 정보 받아오기
-  getSettingInfo = () => {
+  getSettingInfo = async () => {
     var self = this;
-    axios({
+    var getSetting = await axios({
             method: 'GET',
             url: "https://capstone18z.herokuapp.com/rest/setting",
             headers: {
@@ -93,7 +93,8 @@ export default class extends React.Component {
           }).then(function (response) {
             for(var i=0; i<response.data.length; i++){
               if(response.data[i].key == "open_api_update_date")
-                self.setState({open_api_update_date: response.data[i].value});
+                console.log("hey"+ response.data[i].value);
+                //self.setState({open_api_update_date: response.data[i].value});
               else if(response.data[i].key == "location_update_time")
                 self.setState({location_update_time: response.data[i].value});
               else if(response.data[i].key == "location_update_distance")
@@ -107,6 +108,7 @@ export default class extends React.Component {
               console.log("can not get school zone info\n")
             //console.log(error);
           });
+          console.log("hello");
   }
   //어린이 보호구역 전체 정보 받아오기
   getPlaceInfo = () => {
@@ -212,6 +214,7 @@ export default class extends React.Component {
       } = await Location.getCurrentPositionAsync();
       this.setState({ isLoading: false });
       this.setState({ latitude: latitude, longitude: longitude});
+      console.log("===>"+this.state.location_update_time);
       let location = await Location.watchPositionAsync(
         {accuracy:Location.Accuracy.High, timeInterval: 5000, distanceInterval: 0},
         (loc) => {
