@@ -9,23 +9,29 @@ const LOCATION_TRACKING = 'location-tracking';
 
 export default class extends React.Component {
   componentDidMount() {
-    this.getLocation();
-    this.getPlaceInfo();
-    this.getSettingInfo();
+    this.getLocation(); //지속적으로 정보 받아옴
+    this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
+    this.getSettingInfo(); //setting 정보를 받아옴
   }
   state = {
-    isLoading: true,
-    switchValue: false,
-    inPlace: true,
-    latitude: null,
-    longitude: null,
-    isLoading: true,
-    placeId: 1,
-    sectionId: 1,
-    getReceiverInfo: false,
-    getSectionInfo: false,
-    cnt: 3,
-    time: 0,
+    isLoading: true, //로딩페이지를 불러오기 위한 변수
+    switchValue: false, //앱 활성화
+    inPlace: true, //스쿨존 안에 있는지 확인
+    latitude: null, //현재 위도
+    longitude: null, //현재 경도
+    placeId: 1, //school zone id
+    sectionId: 1, //section id
+    getReceiverInfo: false, //수신기 정보 받았는지
+    getSectionInfo: false, //섹션 정보 받았는지
+    cnt: 3, //어린이 수
+
+    //setting information
+    open_api_update_date: null,
+    location_update_time: null,
+    location_update_distance: null,
+    section_update: null,
+    clean_date: null
+
   };
   num = 3;
   //상범에게 -> 이 부분을 내장 저장 하면 돼!
@@ -85,8 +91,18 @@ export default class extends React.Component {
                  "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
               },
           }).then(function (response) {
-            for(var i=0; i<response.data.length; i++)
-              console.log(response.data[i].key);
+            for(var i=0; i<response.data.length; i++){
+              if(response.data[i].key == "open_api_update_date")
+                self.setState({open_api_update_date: response.data[i].value});
+              else if(response.data[i].key == "location_update_time")
+                self.setState({location_update_time: response.data[i].value});
+              else if(response.data[i].key == "location_update_distance")
+                self.setState({location_update_distance: response.data[i].value});
+              else if(response.data[i].key == "section_update")
+                self.setState({section_update: response.data[i].value});
+              else if(response.data[i].key == "clean_date")
+                self.setState({clean_date: response.data[i].value});
+              }
           }) .catch(function (error) {
               console.log("can not get school zone info\n")
             //console.log(error);
