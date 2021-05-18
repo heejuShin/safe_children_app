@@ -11,7 +11,7 @@ export default class extends React.Component {
   componentDidMount() {
     this.getLocation();
     this.getPlaceInfo();
-    //this.getSettingInfo();
+    this.getSettingInfo();
   }
   state = {
     isLoading: true,
@@ -85,7 +85,8 @@ export default class extends React.Component {
                  "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
               },
           }).then(function (response) {
-            //console.log(response)
+            for(var i=0; i<response.data.length; i++)
+              console.log(response.data[i].key);
           }) .catch(function (error) {
               console.log("can not get school zone info\n")
             //console.log(error);
@@ -120,7 +121,7 @@ export default class extends React.Component {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           //console.log(response)
+           //console.log(response.data);
            /*
            "data": Array [
                Object {
@@ -199,9 +200,9 @@ export default class extends React.Component {
         {accuracy:Location.Accuracy.High, timeInterval: 5000, distanceInterval: 0},
         (loc) => {
           const { isLoading } = this.state;
-          console.log(
+          /*console.log(
             `${new Date(Date.now()).toLocaleString()}:`+ loc.coords.latitude +" & "+ loc.coords.longitude
-          );
+          );*/
           this.calculateDistance(loc.coords.latitude, loc.coords.longitude);
           this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude});
         }
