@@ -93,8 +93,7 @@ export default class extends React.Component {
           }).then(function (response) {
             for(var i=0; i<response.data.length; i++){
               if(response.data[i].key == "open_api_update_date")
-                console.log("hey"+ response.data[i].value);
-                //self.setState({open_api_update_date: response.data[i].value});
+                self.setState({open_api_update_date: response.data[i].value});
               else if(response.data[i].key == "location_update_time")
                 self.setState({location_update_time: response.data[i].value});
               else if(response.data[i].key == "location_update_distance")
@@ -108,7 +107,6 @@ export default class extends React.Component {
               console.log("can not get school zone info\n")
             //console.log(error);
           });
-          console.log("hello");
   }
   //어린이 보호구역 전체 정보 받아오기
   getPlaceInfo = () => {
@@ -214,9 +212,8 @@ export default class extends React.Component {
       } = await Location.getCurrentPositionAsync();
       this.setState({ isLoading: false });
       this.setState({ latitude: latitude, longitude: longitude});
-      console.log("===>"+this.state.location_update_time);
       let location = await Location.watchPositionAsync(
-        {accuracy:Location.Accuracy.High, timeInterval: 5000, distanceInterval: 0},
+        {accuracy:Location.Accuracy.High, timeInterval: parseInt(this.state.location_update_time), distanceInterval: parseInt(this.state.location_update_distance)},
         (loc) => {
           const { isLoading } = this.state;
           /*console.log(
