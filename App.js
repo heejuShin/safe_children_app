@@ -4,9 +4,19 @@ import React, {Component, useState, useEffect } from 'react';
 import {Text, View, Button, StyleSheet, Image, Switch, Alert} from 'react-native';
 import axios from 'axios';
 import * as Geolib from 'geolib';
+//alarm
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { useRef } from 'react';
+import { Platform } from 'react-native';
 
-const LOCATION_TRACKING = 'location-tracking';
-
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default class extends React.Component {
   async componentDidMount() {
