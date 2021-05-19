@@ -21,10 +21,6 @@ Notifications.setNotificationHandler({
 export default class extends React.Component {
 
   async componentDidMount() {
-    const [expoPushToken, setExpoPushToken] = useState('');
-    const [notification, setNotification] = useState(false);
-    const notificationListener = useRef();
-    const responseListener = useRef();
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
     this.getLocation(); //지속적으로 정보 받아옴
     this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
@@ -81,17 +77,11 @@ export default class extends React.Component {
             longitude: this.state.longitude, //여기에 비교 값
         });
         if(distance<300) {
-          //school zone evernt => 지속적
-          this.getNum(this.state.sectionId); //여기에 sectionId
+          this.getNum(this.state.sectionId); //지속적으로 받아옴
         }
         if(distance<500){
-          //section 이벤트 (이미 가지고 있는지 확인) => 일시적
-          //this.state.getSectionInfo ? console.log("없음") : console.log("있음");
-          this.getSectionByPlace(this.state.placeId);
-          this.getReceiverByPlace(this.state.placeId);
-          //this.state.getSectionInfo ? console.log() : this.getSectionByPlace(this.state.placeId);
-          //this.state.getReceiverInfo ? console.log() : this.getReceiverInfo(this.state.placeId);
-          //this.getReceiverByPlace(this.state.placeId);
+          this.state.getSectionInfo ? console.log() : this.getSectionByPlace(this.state.placeId); //업데이트시만 받아옴
+          this.state.getReceiverInfo ? console.log() : this.getReceiverByPlace(this.state.placeId); //업데이트시만 받아옴
         }
         //section 나갔는지 확인
         //나갔으면 place 나갔는지 확인
@@ -218,7 +208,6 @@ export default class extends React.Component {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           console.log("어린이 수 : "+response.data);
            self.setState({cnt: parseInt(response.data)});
          }) .catch(function (error) {
              console.log("[error] can not get children num.\n")
@@ -288,7 +277,7 @@ export default class extends React.Component {
           <Button
             title="Press to schedule a notification"
             onPress={async () => {
-              await schedulePushNotification();
+              await schedulePushNotification(this.placeInfo[this.state.placeId].name, this.state.cnt);
             }}
           />
           </View>
@@ -298,46 +287,15 @@ export default class extends React.Component {
 }
 
 //alarm
-async function schedulePushNotification() {
+async function schedulePushNotification(name, num) {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: this.placeInfo[this.state.placeId].name+"📬",
-      body: '어린이가 1명 감지됩니다',
+      title: name+ " 📬",
+      body: '어린이가 '+num+'명 감지됩니다',
       data: { data: 'goes here' },
     },
     trigger: { seconds: 2 },
   });
-}
-
-async function registerForPushNotificationsAsync() {
-  let token;
-  if (Constants.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
-      return;
-    }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-    console.log(token);
-  } else {
-    alert('Must use physical device for Push Notifications');
-  }
-
-  if (Platform.OS === 'android') {
-    Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
-
-  return token;
 }
 
 const styles = StyleSheet.create({
