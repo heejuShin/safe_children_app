@@ -7,6 +7,7 @@ import * as Geolib from 'geolib';
 
 const LOCATION_TRACKING = 'location-tracking';
 
+
 export default class extends React.Component {
   async componentDidMount() {
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
@@ -30,7 +31,11 @@ export default class extends React.Component {
     location_update_time: null,
     location_update_distance: null,
     section_update: null,
-    clean_date: null
+    clean_date: null,
+
+    //alaram
+    notification: null,
+    messageText: '',
 
   };
 
@@ -47,7 +52,9 @@ export default class extends React.Component {
       lon: 12.124,
     },
   ];
+  //앱 활성화
   toggleSwitch = value =>{this.setState({ switchValue: value})};
+  //거리 계산 함수
   calculateDistance = (latitudeC, longitudeC) => {
         let distance = Geolib.getDistance(
           {
