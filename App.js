@@ -1,15 +1,15 @@
 import Loading from  "./Loading";
 import * as Location from "expo-location";
-import React, {Component, useState, useEffect } from 'react';
+import React, {Component, useState, useEffect, useRef } from 'react';
 import {Text, View, Button, StyleSheet, Image, Switch, Alert} from 'react-native';
 import axios from 'axios';
 import * as Geolib from 'geolib';
 //alarm
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
-import { useRef } from 'react';
 import { Platform } from 'react-native';
 
+//alarm
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -19,7 +19,12 @@ Notifications.setNotificationHandler({
 });
 
 export default class extends React.Component {
+
   async componentDidMount() {
+    const [expoPushToken, setExpoPushToken] = useState('');
+    const [notification, setNotification] = useState(false);
+    const notificationListener = useRef();
+    const responseListener = useRef();
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
     this.getLocation(); //지속적으로 정보 받아옴
     this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
@@ -44,8 +49,8 @@ export default class extends React.Component {
     clean_date: null,
 
     //alaram
-    notification: null,
-    messageText: '',
+    expoPushToken: null,
+    setExpoPushToken: null,
 
   };
 
@@ -213,6 +218,7 @@ export default class extends React.Component {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
+           console.log("어린이 수 : "+response.data);
            self.setState({cnt: parseInt(response.data)});
          }) .catch(function (error) {
              console.log("[error] can not get children num.\n")
@@ -248,6 +254,7 @@ export default class extends React.Component {
 
   render() {
     const { isLoading } = this.state.isLoading;
+
     return isLoading ? <Loading />
     : (
         <View style={styles.background}>
@@ -278,12 +285,60 @@ export default class extends React.Component {
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
             </View>}
           <View style={styles.test}>
+          <Button
+            title="Press to schedule a notification"
+            onPress={async () => {
+              await schedulePushNotification();
+            }}
+          />
           </View>
         </View>
       );
   }
 }
 
+//alarm
+async function schedulePushNotification() {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: this.placeInfo[this.state.placeId].name+"📬",
+      body: '어린이가 1명 감지됩니다',
+      data: { data: 'goes here' },
+    },
+    trigger: { seconds: 2 },
+  });
+}
+
+async function registerForPushNotificationsAsync() {
+  let token;
+  if (Constants.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+    token = (await Notifications.getExpoPushTokenAsync()).data;
+    console.log(token);
+  } else {
+    alert('Must use physical device for Push Notifications');
+  }
+
+  if (Platform.OS === 'android') {
+    Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  return token;
+}
 
 const styles = StyleSheet.create({
   test: {
