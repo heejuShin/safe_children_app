@@ -374,7 +374,7 @@ getSchoolZoneByPlace = async (place) => {
             </View>}
           <View style={styles.test}>
           <Button
-            title="Press to schedule a notification"
+            title="알람 테스트"
             onPress={async () => {
               await schedulePushNotification(this.placeInfo[this.state.placeId].name, this.state.cnt);
             }}
