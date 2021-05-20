@@ -8,6 +8,8 @@ import * as Geolib from 'geolib';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+//내장 저장
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //alarm
 Notifications.setNotificationHandler({
@@ -22,8 +24,18 @@ export default class extends React.Component {
 
   async componentDidMount() {
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
-    this.getLocation(); //지속적으로 정보 받아옴
-    this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
+    //this.getLocation(); //지속적으로 정보 받아옴
+    await this.getLocation();
+    await this.getData("제주특별자치도 제주시 한경면");
+    if(this.placeInfo.length != 0){ // 현재 시,구 정보가 내장되어 있을 경우
+      await this.getSchoolZoneByPlace(this.placeInfo);
+      await this.storeData("제주특별자치도 제주시 한경면");
+    }else{ // 처음가보는 곳일 경우
+      await this.getSchoolZoneByPlaceFirstTime("제주특별자치도 제주시 한경면"); //날짜가 없어야함
+      //console.log("INFO is ", this.placeInfo);
+    }
+    //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
+
   }
   state = {
     isLoading: true, //로딩페이지를 불러오기 위한 변수
@@ -50,7 +62,8 @@ export default class extends React.Component {
 
   };
 
-  //상범에게 -> 이 부분을 내장 저장 하면 돼!
+  placeInfo = [];
+/*
   placeInfo = [
     {
       name: "양덕초등학교",
@@ -62,7 +75,7 @@ export default class extends React.Component {
       lat: 12.313,
       lon: 12.124,
     },
-  ];
+  ];*/
   //앱 활성화
   toggleSwitch = value =>{this.setState({ switchValue: value})};
   //거리 계산 함수
@@ -215,6 +228,58 @@ export default class extends React.Component {
          });
   }
 
+  getSchoolZoneByPlaceFirstTime = async (place) => {
+  var self = this;
+  //console.log("Address is :" ,place);
+  axios({
+    method: 'GET',
+    url: "https://capstone18z.herokuapp.com/rest/schoolzone",//현재 place를 넣으면 404가 나옴
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+          "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+      }
+  }).then(function (response) {
+    placeInfo = Object.entries(response.data).map(([key, val])=> ({
+      [key]: val
+    }));
+    //this.storeData("제주특별자치도 제주시 한경면");
+    console.log("getSchoolZoneByPlaceFirstTime ",placeInfo);
+    //this.storeData("제주특별자치도 제주시 한경면");
+  }).then(()=>{
+    this.storeData("제주특별자치도 제주시 한경면");
+  }) .catch(function (error) {
+      //console.log("can not get getSchoolZoneByPlaceFirstTime\n")
+    //console.log(error);
+  });
+
+};
+getSchoolZoneByPlace = async (place) => {
+  var self = this;
+  //console.log("IN getschoolzonebyplace",place);
+  //var date = new Date().getDate();
+  //var month = new Date().getMonth();
+  //var year = new Date().getFullYear();
+  //console.log("Params are "+year+'-'+month+'-'+date)
+  axios({
+    method: 'GET',
+    url: "https://capstone18z.herokuapp.com/rest/schoolzone/",
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+          "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+      },
+    params: {
+      //updateDate: 2021+'-'+month+'-'+date
+    }
+  }).then(function (response) {
+    this.placeInfo = response.data
+    //console.log("getSchoolZoneByPlace ",this.placeInfo[0].name)
+  }) .catch(function (error) {
+      //console.log("can not get getSchoolZoneByPlace\n")
+    //console.log(error);
+  });
+
+};
+
   getLocation = async () => {
 
     try {
@@ -240,6 +305,38 @@ export default class extends React.Component {
       Alert.alert("오류", "앱 실행을 위해 위치 정보가 필요합니다. 위치 권한을 설정해주세요.");
     }
   };
+
+  storeData = async (key) => {//키 값은 시, 구 이름으로
+      var self = this;
+      //console.log("In sotre data key is:",key);
+      console.log("In store data placeinfo :",this.placeInfo);
+      try {
+        const jsonValue = JSON.stringify(this.placeInfo)
+        await AsyncStorage.setItem(key, jsonValue)
+        console.log("json values are ",jsonValue);
+      } catch (e) {
+        Alert.alert("Error occur in store data");
+      }
+    }
+
+    getData = async (place) => {
+      try {
+        const value = await AsyncStorage.getItem(place);
+        //console.log("get data check ",place);
+        //console.log("get data check2",value);
+        if(value !== null) {
+          this.placeInfo = JSON.parse(value);
+          // value previously stored
+          //this.setState({savetest : JSON.parse(value)});
+          //Alert.alert(a);
+        }else{
+          this.placeInfo=[];
+        }
+      } catch(e) {
+        //console.log("Error occur in get data",e);
+        // error reading value
+      }
+    }
 
   render() {
     const { isLoading } = this.state.isLoading;
