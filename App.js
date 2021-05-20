@@ -23,15 +23,16 @@ Notifications.setNotificationHandler({
 export default class extends React.Component {
 
   async componentDidMount() {
+    this.placeInfo = [];
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
     //this.getLocation(); //지속적으로 정보 받아옴
     await this.getLocation();
-    await this.getData("제주특별자치도 제주시 한경면");
+    await this.getData("충청북도 충주시 수안보면");
     if(this.placeInfo.length != 0){ // 현재 시,구 정보가 내장되어 있을 경우
       await this.getSchoolZoneByPlace(this.placeInfo);
-      await this.storeData("제주특별자치도 제주시 한경면");
+      await this.storeData("충청북도 충주시 수안보면");
     }else{ // 처음가보는 곳일 경우
-      await this.getSchoolZoneByPlaceFirstTime("제주특별자치도 제주시 한경면"); //날짜가 없어야함
+      await this.getSchoolZoneByPlaceFirstTime("충청북도 충주시 수안보면"); //날짜가 없어야함
       //console.log("INFO is ", this.placeInfo);
     }
     //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
@@ -62,8 +63,8 @@ export default class extends React.Component {
 
   };
 
-  placeInfo = [];
-/*
+  //placeInfo = [];
+
   placeInfo = [
     {
       name: "양덕초등학교",
@@ -75,7 +76,7 @@ export default class extends React.Component {
       lat: 12.313,
       lon: 12.124,
     },
-  ];*/
+  ];
   //앱 활성화
   toggleSwitch = value =>{this.setState({ switchValue: value})};
   //거리 계산 함수
@@ -129,7 +130,7 @@ export default class extends React.Component {
                 self.setState({clean_date: response.data[i].value});
               }
           }) .catch(function (error) {
-              console.log("can not get school zone info\n")
+              //console.log("can not get school zone info\n")
             //console.log(error);
           });
   }
@@ -147,7 +148,7 @@ export default class extends React.Component {
             //console.log(response)
             self.setState({getReceivernInfo: true});
           }) .catch(function (error) {
-              console.log("can not get setting info\n")
+              //console.log("can not get setting info\n")
             //console.log(error);
           });
   }
@@ -187,7 +188,7 @@ export default class extends React.Component {
            */
            self.setState({getSectionInfo: true});
          }) .catch(function (error) {
-           console.log("[error] can not get sectionInfo.\n")
+           //console.log("[error] can not get sectionInfo.\n")
            //console.log(error);
          });
   }
@@ -223,8 +224,8 @@ export default class extends React.Component {
          }).then(function (response) {
            self.setState({cnt: parseInt(response.data)});
          }) .catch(function (error) {
-             console.log("[error] can not get children num.\n")
-           console.log(error);
+             //console.log("[error] can not get children num.\n")
+           //console.log(error);
          });
   }
 
@@ -239,14 +240,15 @@ export default class extends React.Component {
           "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
       }
   }).then(function (response) {
-    placeInfo = Object.entries(response.data).map(([key, val])=> ({
+    console.log("getSchoolZoneByPlaceFirstTimeEarly ", self.placeInfo);
+    self.placeInfo = Object.entries(response.data).map(([key, val])=> ({
       [key]: val
     }));
-    //this.storeData("제주특별자치도 제주시 한경면");
-    console.log("getSchoolZoneByPlaceFirstTime ",placeInfo);
-    //this.storeData("제주특별자치도 제주시 한경면");
+    //this.storeData("충청북도 충주시 수안보면");
+    console.log("getSchoolZoneByPlaceFirstTime ",self.placeInfo[0]);
+    //this.storeData("충청북도 충주시 수안보면");
   }).then(()=>{
-    this.storeData("제주특별자치도 제주시 한경면");
+    this.storeData("충청북도 충주시 수안보면");
   }) .catch(function (error) {
       //console.log("can not get getSchoolZoneByPlaceFirstTime\n")
     //console.log(error);
@@ -271,8 +273,8 @@ getSchoolZoneByPlace = async (place) => {
       //updateDate: 2021+'-'+month+'-'+date
     }
   }).then(function (response) {
-    this.placeInfo = response.data
-    //console.log("getSchoolZoneByPlace ",this.placeInfo[0].name)
+    self.placeInfo = response.data
+    //console.log("getSchoolZoneByPlace ",self.placeInfo)
   }) .catch(function (error) {
       //console.log("can not get getSchoolZoneByPlace\n")
     //console.log(error);
@@ -309,11 +311,11 @@ getSchoolZoneByPlace = async (place) => {
   storeData = async (key) => {//키 값은 시, 구 이름으로
       var self = this;
       //console.log("In sotre data key is:",key);
-      console.log("In store data placeinfo :",this.placeInfo);
+      //console.log("In store data placeinfo :",this.placeInfo);
       try {
         const jsonValue = JSON.stringify(this.placeInfo)
         await AsyncStorage.setItem(key, jsonValue)
-        console.log("json values are ",jsonValue);
+        //console.log("json values are ",jsonValue);
       } catch (e) {
         Alert.alert("Error occur in store data");
       }
