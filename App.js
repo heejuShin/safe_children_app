@@ -45,10 +45,10 @@ export default class extends React.Component {
     latitude: null, //현재 위도
     longitude: null, //현재 경도
     placeId: 1, //school zone id
-    sectionId: 1, //section id
+    sectionId: 10, //section id
     getReceiverInfo: false, //수신기 정보 받았는지
     getSectionInfo: false, //섹션 정보 받았는지
-    cnt: 3, //어린이 수
+    cnt: 0, //어린이 수
 
     //setting information
     open_api_update_date: null,
@@ -317,7 +317,7 @@ getSchoolZoneByPlace = async (place) => {
         await AsyncStorage.setItem(key, jsonValue)
         //console.log("json values are ",jsonValue);
       } catch (e) {
-        Alert.alert("Error occur in store data");
+        //Alert.alert("Error occur in store data");
       }
     }
 
@@ -342,7 +342,6 @@ getSchoolZoneByPlace = async (place) => {
 
   render() {
     const { isLoading } = this.state.isLoading;
-
     return isLoading ? <Loading />
     : (
         <View style={styles.background}>
@@ -357,23 +356,27 @@ getSchoolZoneByPlace = async (place) => {
                 <Text style={styles.text}>어린이 보호 구역입니다.</Text>
               </View>
               <View style={styles.alert_num}>
-                <View style={{ flex: 1}}>
+                <View style={{flex: 1}}>
                   <Image source={require('./images/child.png')} style={styles.img}></Image>
                 </View>
-                <View style={{ flex: 3, paddingLeft: 15,}}>
+                 <View style={{ flex: 3, paddingLeft: 15,}}>
                   <View style={{flexDirection: "row"}}>
-                    <Text style={styles.text}>현재 </Text><Text style={styles.num}>5명</Text><Text style={styles.text}> 감지됩니다. </Text>
+                    <Text style={styles.text}>현재 </Text>
+                    {this.state.cnt != 0 ?
+                    <Text style={styles.num}>{this.state.cnt}명</Text>
+                    : <Text style={styles.text}>감지되는</Text> }
+                    {this.state.cnt != 0 ?
+                    <Text style={styles.text}> 감지됩니다. </Text>
+                    : <Text></Text>}
                   </View>
+                 <View/>
+                 <View/>
                   <View>
+                    {this.state.cnt != 0 ?
                     <Text style={styles.text}>주의하세요!</Text>
+                    : <Text style={styles.text}>어린이가 없습니다.</Text>}
                   </View>
                 </View>
-                <Button
-         title="알람 테스트"
-         onPress={async () => {
-           await schedulePushNotification("와랩 유치원", this.state.cnt);
-         }}
-       />
               </View>
             </View>
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -390,12 +393,12 @@ async function schedulePushNotification(name, num) {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: name+ " 📬",
-      body: '어린이가 5명 감지됩니다',
+      body: '어린이가 '+num+'명 감지됩니다',
       //title: "알림 📬",
       //body: "와랩 유치원에 진입했습니다.",
       data: { data: 'goes here' },
     },
-    trigger: { seconds: 32 },
+    trigger: { seconds: 0 },
   });
 }
 
