@@ -353,7 +353,7 @@ getSchoolZoneByPlace = async (place) => {
           {this.state.switchValue && this.state.inPlace ?
             <View>
               <View style={styles.alert_place}>
-                <Text style={styles.placeName}>"{this.placeInfo[this.state.placeId].name}"</Text>
+                <Text style={styles.placeName}>"와랩 유치원"</Text>
                 <Text style={styles.text}>어린이 보호 구역입니다.</Text>
               </View>
               <View style={styles.alert_num}>
@@ -362,23 +362,23 @@ getSchoolZoneByPlace = async (place) => {
                 </View>
                 <View style={{ flex: 3, paddingLeft: 15,}}>
                   <View style={{flexDirection: "row"}}>
-                    <Text style={styles.text}>현재 </Text><Text style={styles.num}>{this.state.cnt}명</Text><Text style={styles.text}> 감지됩니다. </Text>
+                    <Text style={styles.text}>현재 </Text><Text style={styles.num}>5명</Text><Text style={styles.text}> 감지됩니다. </Text>
                   </View>
                   <View>
                     <Text style={styles.text}>주의하세요!</Text>
                   </View>
                 </View>
+                <Button
+         title="알람 테스트"
+         onPress={async () => {
+           await schedulePushNotification("와랩 유치원", this.state.cnt);
+         }}
+       />
               </View>
             </View>
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
             </View>}
           <View style={styles.test}>
-          <Button
-            title="알람 테스트"
-            onPress={async () => {
-              await schedulePushNotification(this.placeInfo[this.state.placeId].name, this.state.cnt);
-            }}
-          />
           </View>
         </View>
       );
@@ -390,10 +390,12 @@ async function schedulePushNotification(name, num) {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: name+ " 📬",
-      body: '어린이가 '+num+'명 감지됩니다',
+      body: '어린이가 5명 감지됩니다',
+      //title: "알림 📬",
+      //body: "와랩 유치원에 진입했습니다.",
       data: { data: 'goes here' },
     },
-    trigger: { seconds: 2 },
+    trigger: { seconds: 32 },
   });
 }
 
