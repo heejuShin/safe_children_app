@@ -361,10 +361,12 @@ getSchoolZoneByPlace = async (place) => {
                 </View>
                  <View style={{ flex: 3, paddingLeft: 15,}}>
                   <View style={{flexDirection: "row"}}>
+                    {this.state.cnt != 0 ?
                     <Text style={styles.text}>현재 </Text>
+                    : <Text style={styles.text_zero}>현재 </Text> }
                     {this.state.cnt != 0 ?
                     <Text style={styles.num}>{this.state.cnt}명</Text>
-                    : <Text style={styles.text}>감지되는</Text> }
+                    : <Text style={styles.text_zero}>감지되는</Text> }
                     {this.state.cnt != 0 ?
                     <Text style={styles.text}> 감지됩니다. </Text>
                     : <Text></Text>}
@@ -374,7 +376,7 @@ getSchoolZoneByPlace = async (place) => {
                   <View>
                     {this.state.cnt != 0 ?
                     <Text style={styles.text}>주의하세요!</Text>
-                    : <Text style={styles.text}>어린이가 없습니다.</Text>}
+                    : <Text style={styles.text_zero}>어린이가 없습니다.</Text>}
                   </View>
                 </View>
               </View>
@@ -461,6 +463,9 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 20,
+  },
+  text_zero: {
+    fontSize: 18,
   },
   img: {
     width: "100%",
