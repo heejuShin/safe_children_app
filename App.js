@@ -48,7 +48,7 @@ export default class extends React.Component {
     sectionId: 10, //section id
     getReceiverInfo: false, //수신기 정보 받았는지
     getSectionInfo: false, //섹션 정보 받았는지
-    cnt: 0, //어린이 수
+    cnt: 5, //어린이 수
 
     //setting information
     open_api_update_date: null,
@@ -222,7 +222,7 @@ export default class extends React.Component {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           self.setState({cnt: parseInt(response.data)});
+           //self.setState({cnt: parseInt(response.data)});
          }) .catch(function (error) {
              //console.log("[error] can not get children num.\n")
            //console.log(error);
@@ -384,6 +384,12 @@ getSchoolZoneByPlace = async (place) => {
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
             </View>}
           <View style={styles.test}>
+          <Button
+            title="알람 테스트"
+            onPress={async () => {
+              await schedulePushNotification("와랩 유치원", 5);
+            }}
+          />
           </View>
         </View>
       );
@@ -392,6 +398,7 @@ getSchoolZoneByPlace = async (place) => {
 
 //alarm
 async function schedulePushNotification(name, num) {
+  console.log("test");
   await Notifications.scheduleNotificationAsync({
     content: {
       title: name+ " 📬",
@@ -400,8 +407,9 @@ async function schedulePushNotification(name, num) {
       //body: "와랩 유치원에 진입했습니다.",
       data: { data: 'goes here' },
     },
-    trigger: { seconds: 0 },
+    trigger: { seconds: 1 },
   });
+  await console.log("done");
 }
 
 const styles = StyleSheet.create({
