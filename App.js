@@ -48,7 +48,7 @@ export default class extends React.Component {
     sectionId: 10, //section id
     getReceiverInfo: false, //수신기 정보 받았는지
     getSectionInfo: false, //섹션 정보 받았는지
-    cnt: 5, //어린이 수
+    cnt: 0, //어린이 수
 
     //setting information
     open_api_update_date: null,
@@ -222,7 +222,8 @@ export default class extends React.Component {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           //self.setState({cnt: parseInt(response.data)});
+           self.setState({cnt: parseInt(response.data)});
+           console.log("어린이 수 : ", response.data);
          }) .catch(function (error) {
              //console.log("[error] can not get children num.\n")
            //console.log(error);
@@ -295,9 +296,9 @@ getSchoolZoneByPlace = async (place) => {
         {accuracy:Location.Accuracy.High, timeInterval: parseInt(this.state.location_update_time), distanceInterval: parseInt(this.state.location_update_distance)},
         (loc) => {
           const { isLoading } = this.state;
-          /*console.log(
+          console.log(
             `${new Date(Date.now()).toLocaleString()}:`+ loc.coords.latitude +" & "+ loc.coords.longitude
-          );*/
+          );
           this.calculateDistance(loc.coords.latitude, loc.coords.longitude);
           this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude});
         }
@@ -357,7 +358,7 @@ getSchoolZoneByPlace = async (place) => {
               </View>
               <View style={styles.alert_num}>
                 <View style={{flex: 1}}>
-                  <Image source={require('./images/child.png')} style={styles.img}></Image>
+                  <Image source={require('./assets/child.png')} style={styles.img}></Image>
                 </View>
                  <View style={{ flex: 3, paddingLeft: 15,}}>
                   <View style={{flexDirection: "row"}}>
@@ -384,12 +385,7 @@ getSchoolZoneByPlace = async (place) => {
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
             </View>}
           <View style={styles.test}>
-          <Button
-            title="알람 테스트"
-            onPress={async () => {
-              await schedulePushNotification("와랩 유치원", 5);
-            }}
-          />
+
           </View>
         </View>
       );
@@ -407,7 +403,7 @@ async function schedulePushNotification(name, num) {
       //body: "와랩 유치원에 진입했습니다.",
       data: { data: 'goes here' },
     },
-    trigger: { seconds: 1 },
+    trigger: { seconds: 0 },
   });
   await console.log("done");
 }
