@@ -11,6 +11,8 @@ import { Platform } from 'react-native';
 //내장 저장
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { styles } from './Styles';
+
 //alarm
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -36,8 +38,8 @@ export default class extends React.Component {
       //console.log("INFO is ", this.placeInfo);
     }
     //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
-
   }
+
   state = {
     isLoading: true, //로딩페이지를 불러오기 위한 변수
     switchValue: false, //앱 활성화
@@ -45,10 +47,12 @@ export default class extends React.Component {
     latitude: null, //현재 위도
     longitude: null, //현재 경도
     placeId: 1, //school zone id
-    sectionId: 10, //section id
+    //sectionId: 10, //section id
     getReceiverInfo: false, //수신기 정보 받았는지
     getSectionInfo: false, //섹션 정보 받았는지
+    isFirstTimeEnter: true, //
     cnt: 0, //어린이 수
+    last_cnt: 0, //지난 어린이 수 (변화용)
 
     //setting information
     open_api_update_date: null,
@@ -80,7 +84,7 @@ export default class extends React.Component {
   //앱 활성화
   toggleSwitch = value =>{this.setState({ switchValue: value})};
   //거리 계산 함수
-  calculateDistance = (latitudeC, longitudeC) => {
+  calculateDistance = async (latitudeC, longitudeC) => {
         let distance = Geolib.getDistance(
           {
             latitude: latitudeC,
@@ -91,10 +95,12 @@ export default class extends React.Component {
             longitude: this.state.longitude, //여기에 비교 값
         });
         if(distance<300) {
-          this.getNum(this.state.sectionId); //지속적으로 받아옴
+          this.state.isFirstTimeEnter ? await this.EnterPushNotification("와랩유치원") : console.log();
+          this.setState({ isFirstTimeEnter : false})
+          this.getNum(this.state.placeId); //지속적으로 받아옴
         }
         if(distance<500){
-          this.state.getSectionInfo ? console.log() : this.getSectionByPlace(this.state.placeId); //업데이트시만 받아옴
+          //this.state.getSectionInfo ? console.log() : //this.getSectionByPlace(this.state.placeId); //업데이트시만 받아옴
           this.state.getReceiverInfo ? console.log() : this.getReceiverByPlace(this.state.placeId); //업데이트시만 받아옴
         }
         //section 나갔는지 확인
@@ -152,46 +158,6 @@ export default class extends React.Component {
             //console.log(error);
           });
   }
-  //Place Id로 section 받아오기 (500M)
-  getSectionByPlace = (placeId) => {
-    var self = this;
-    axios({
-           method: 'GET',
-           url: "https://capstone18z.herokuapp.com/rest/section/"+placeId,
-           headers: {
-               "Content-Type": "application/x-www-form-urlencoded",
-                "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
-             },
-         }).then(function (response) {
-           //console.log(response.data);
-           /*
-           "data": Array [
-               Object {
-                 "endX": 36.093,
-                 "endY": 129.388,
-                 "id": 3,
-                 "placeId": 1,
-                 "regDate": 1620354698000,
-                 "startX": 36.0929,
-                 "startY": 129.387,
-               },
-               Object {
-                 "endX": 36.098,
-                 "endY": 129.39,
-                 "id": 4,
-                 "placeId": 1,
-                 "regDate": 1620355302000,
-                 "startX": 36.0929,
-                 "startY": 129.387,
-               },
-             ],
-           */
-           self.setState({getSectionInfo: true});
-         }) .catch(function (error) {
-           //console.log("[error] can not get sectionInfo.\n")
-           //console.log(error);
-         });
-  }
   //Place Id로 수신기 받아오기 (300M ? 500M?)
   getReceiverByPlace = (placeId) => {
     var self = this;
@@ -212,22 +178,26 @@ export default class extends React.Component {
          });
   }
   //어린이 숫자 받아오기 (300M안에서 계속)
-  getNum = (sectionId) => {
+  getNum = async (placeId) => {
     var self = this;
     axios({
            method: 'GET',
-           url: "https://capstone18z.herokuapp.com/rest/section/children/"+sectionId,
+           url: "https://capstone18z.herokuapp.com/rest/section/children/"+placeId,
            headers: {
                "Content-Type": "application/x-www-form-urlencoded",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
+           self.setState({last_cnt: cnt});
            self.setState({cnt: parseInt(response.data)});
            console.log("어린이 수 : ", response.data);
          }) .catch(function (error) {
              //console.log("[error] can not get children num.\n")
            //console.log(error);
          });
+         (this.state.last_cnt != this.state.cnt)
+         ? await this.NumPushNotification("와랩유치원", this.state.cnt)
+         : console.log();
   }
 
   getSchoolZoneByPlaceFirstTime = async (place) => {
@@ -296,11 +266,15 @@ getSchoolZoneByPlace = async (place) => {
         {accuracy:Location.Accuracy.High, timeInterval: parseInt(this.state.location_update_time), distanceInterval: parseInt(this.state.location_update_distance)},
         (loc) => {
           const { isLoading } = this.state;
-          console.log(
+          /*console.log(
             `${new Date(Date.now()).toLocaleString()}:`+ loc.coords.latitude +" & "+ loc.coords.longitude
-          );
-          this.calculateDistance(loc.coords.latitude, loc.coords.longitude);
-          this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude});
+          );*/
+          (this.state.switchValue) ?
+          this.calculateDistance(loc.coords.latitude, loc.coords.longitude)
+          : console.log() ;
+          (this.state.switchValue) ?
+          this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude})
+          : console.log() ;
         }
       );
     } catch (error) {
@@ -340,6 +314,34 @@ getSchoolZoneByPlace = async (place) => {
         // error reading value
       }
     }
+
+    EnterPushNotification = async (name) => {
+      console.log("enter test");
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "알림 📬",
+                body: name+'에 진입했습니다',
+                data: { data: 'goes here' },
+              },
+              trigger: { seconds: 1 },
+            });
+            await console.log("enter done");
+    }
+
+    NumberPushNotification = async (name, num) => {
+      console.log("num test");
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: name+ " 📬",
+          body: '어린이가 '+num+'명 감지됩니다',
+          data: { data: 'goes here' },
+        },
+        trigger: { seconds: 0 },
+      });
+      await console.log("num done");
+
+    }
+
 
   render() {
     const { isLoading } = this.state.isLoading;
@@ -385,95 +387,15 @@ getSchoolZoneByPlace = async (place) => {
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
             </View>}
           <View style={styles.test}>
-
+            <Button
+              title="알람 테스트"
+              onPress={async () => {
+                await this.EnterPushNotification("와랩 유치원", this.state.cnt);
+              }}
+            />
           </View>
         </View>
       );
   }
 }
-
-//alarm
-async function schedulePushNotification(name, num) {
-  console.log("test");
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: name+ " 📬",
-      body: '어린이가 '+num+'명 감지됩니다',
-      //title: "알림 📬",
-      //body: "와랩 유치원에 진입했습니다.",
-      data: { data: 'goes here' },
-    },
-    trigger: { seconds: 0 },
-  });
-  await console.log("done");
-}
-
-const styles = StyleSheet.create({
-  test: {
-    marginTop: 100,
-    marginBottom : 20,
-    width: '100%',
-    height: 80,
-    alignItems: 'center', //가로 정렬
-    justifyContent: 'center', //세로 정렬
-    position:'absolute',bottom:30,alignSelf:'flex-end'
-  },
-  background: {
-    flex: 1,
-    backgroundColor: '#ffe896',
-  },
-  active: {
-    marginTop: 70,
-    marginBottom : 20,
-    width: '100%',
-    height: 80,
-    //backgroundColor: 'pink',
-    alignItems: 'center', //가로 정렬
-    justifyContent: 'center', //세로 정렬
-  },
-  alert_place: {
-    marginTop: 10,
-    marginLeft : '5%',
-    marginRight : '5%',
-    padding: 25,
-    width: '90%',
-    height:100,
-    backgroundColor: 'white',
-  },
-  active_text: {
-    marginTop : 10,
-    color : '#616161',
-  },
-  alert_num: {
-    marginTop: 10,
-    marginLeft : '5%',
-    marginRight : '5%',
-    padding: 25,
-    width: '90%',
-    height:100,
-    backgroundColor: 'white',
-    flexDirection: "row",
-  },
-  placeName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: "#5599e0",
-  },
-  num: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: "#f58302",
-    marginTop : -1,
-  },
-  text: {
-    fontSize: 20,
-  },
-  text_zero: {
-    fontSize: 18,
-  },
-  img: {
-    width: "100%",
-    height: "100%",
-    //resizeMode: 'contain',
-  }
-});
+//const styles = Function.sheet;
