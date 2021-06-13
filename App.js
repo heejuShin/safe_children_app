@@ -85,23 +85,28 @@ export default class extends React.Component {
   toggleSwitch = value =>{this.setState({ switchValue: value})};
   //거리 계산 함수
   calculateDistance = async (latitudeC, longitudeC) => {
-        let distance = Geolib.getDistance(
-          {
-            latitude: latitudeC,
-            longitude: longitudeC,
-          },
-          {
-            latitude: this.state.latitude, //여기에 비교 값
-            longitude: this.state.longitude, //여기에 비교 값
-        });
-        if(distance<300) {
-          this.state.isFirstTimeEnter ? await this.EnterPushNotification("와랩유치원") : console.log();
-          this.setState({ isFirstTimeEnter : false})
-          this.getNum(this.state.placeId); //지속적으로 받아옴
-        }
-        if(distance<500){
-          //this.state.getSectionInfo ? console.log() : //this.getSectionByPlace(this.state.placeId); //업데이트시만 받아옴
-          this.state.getReceiverInfo ? console.log() : this.getReceiverByPlace(this.state.placeId); //업데이트시만 받아옴
+        //todo
+        for(var i=0; i<this.placeInfo.length; i++){
+          console.log("==>"+this.placeInfo[i][i].latitude+"&"+this.placeInfo[i][i].longitude);
+          let distance = Geolib.getDistance(
+            {
+              latitude: latitudeC,
+              longitude: longitudeC,
+            },
+            {
+              latitude: this.state.latitude, //여기에 비교 값
+              longitude: this.state.longitude, //여기에 비교 값
+          });
+          if(distance<500){
+            //this.state.getSectionInfo ? console.log() : //this.getSectionByPlace(this.state.placeId); //업데이트시만 받아옴
+            this.state.getReceiverInfo ? console.log() : this.getReceiverByPlace(this.state.placeId); //업데이트시만 받아옴
+          }
+          if(distance<300) {
+            this.state.isFirstTimeEnter ? await this.EnterPushNotification("와랩유치원") : console.log();
+            this.setState({ isFirstTimeEnter : false})
+            this.getNum(this.state.placeId); //지속적으로 받아옴
+            break;
+          }
         }
         //section 나갔는지 확인
         //나갔으면 place 나갔는지 확인
@@ -269,6 +274,9 @@ getSchoolZoneByPlace = async (place) => {
           /*console.log(
             `${new Date(Date.now()).toLocaleString()}:`+ loc.coords.latitude +" & "+ loc.coords.longitude
           );*/
+          // todo
+          //-> 여기서 안들어가져있을때만 확인후에 나가면 처리할건지
+          //-> 여기서 계속 for문 돌면서 확인할 건지!
           (this.state.switchValue) ?
           this.calculateDistance(loc.coords.latitude, loc.coords.longitude)
           : console.log() ;
