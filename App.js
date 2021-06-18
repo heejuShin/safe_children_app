@@ -29,12 +29,12 @@ export default class extends React.Component {
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
     //this.getLocation(); //지속적으로 정보 받아옴
     await this.getLocation();
-    await this.getData("충청북도 충주시 수안보면");
+    await this.koreaGrid();
+    await this.getData(this.gridX*10 + this.gridY);
     if(this.placeInfo.length != 0){ // 현재 시,구 정보가 내장되어 있을 경우
-      await this.getSchoolZoneByPlace(this.placeInfo);
-      await this.storeData("충청북도 충주시 수안보면");
+      await this.getSchoolZoneByPlace();
     }else{ // 처음가보는 곳일 경우
-      await this.getSchoolZoneByPlaceFirstTime("충청북도 충주시 수안보면"); //날짜가 없어야함
+      await this.getSchoolZoneByPlaceFirstTime(); //날짜가 없어야함
       //console.log("INFO is ", this.placeInfo);
     }
     //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
@@ -81,6 +81,226 @@ export default class extends React.Component {
       lon: 12.124,
     },
   ];
+
+  korea_longitude=[125.86, 129.64];
+  korea_latitude = [38.183, 34.277];
+  per_x = (129.64 - 125.86) / 9.0;
+  per_y = (38.183 - 34.277) / 9.0;
+  gridX = 0;
+  gridY = 0;
+  gridSemi = [];
+
+  //위치로 그리드 구하는 함수
+  koreaGrid = async () => {
+    var self = this;
+    for(let i=0;i<9;i++){
+      if(self.state.longitude < self.korea_longitude[0]+self.per_x*i){
+        self.gridX = i;
+        break;
+      }
+      if(i==8) self.gridX = i;
+    }
+
+    for(let i=0;i<9;i++){
+      if(self.korea_latitude[0]- self.per_y*i < self.state.latitude ){
+        self.gridY = i;
+        break;
+      }
+    }
+    if(self.state.longitude < self.korea_latitude[1]) y = 10;  
+    console.log("Korea Grid ",self.gridX,self.gridY);  
+  };
+
+  //100개 이상일 때 여기로 옴
+  koreaGridSemi = async() =>{
+    var self = this;
+    var astartX = self.placeInfo[3];
+    var astartY = self.placeInfo[2];
+    var aendX = self.placeInfo[1];
+    var aendY = self.placeInfo[0];
+    var per_x = (aendX - astartX)/9.0;
+    var per_y = (astartY - aendY)/9.0;
+
+    var pre_gridX = self.gridX;
+    var pre_gridY = self.gridY;
+
+    for(let i=0;i<9;i++){
+      if(self.state.longitude < self.korea_longitude[0]+per_x*i){
+        self.gridX = i;
+        break;
+      }
+      if(i==8) self.gridX = i;
+    }
+
+    for(let i=0;i<9;i++){
+      if(self.korea_latitude[0]- per_y*i < self.state.latitude ){
+        self.gridY = i;
+        break;
+      }
+    }
+
+    console.log(self.placeInfo);
+    console.log(pre_gridX, " ", pre_gridY, " " ,self.gridX," ", self.gridY," ", aendX["endX"]," ", aendY["endY"]," ", astartX.startX," ", astartY["startY"]);
+
+    await axios({
+        method: 'GET',
+        url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+        },
+        params : {
+          endY: aendY["endY"],
+          endX: aendX["endX"],
+          startY: astartY.startY,
+          startX: astartX.startX,
+        }
+      }).then(function (response){
+        console.log("Semi start ", response.data);
+        self.placeInfo = Object.entries(response.data.placeData).map(([key, val])=> ({
+          [key]: val
+        }));
+        self.placeInfo[self.placeInfo.length] = response.data.timeData;
+        console.log("Semi ", self.placeInfo[0]);
+        console.log("semi ", self.placeInfo[self.placeInfo.length-1]);
+      }).then(function (response){
+        self.storeData(pre_gridX*10 + pre_gridY);
+        console.log("Semi then after");
+      }).catch(function (error) {
+        console.log("can not get KoreaGridSemi\n",error)
+    });
+  };
+
+  getSchoolZoneByPlaceFirstTime = async () => {
+    console.log("getschoolzonebyplacefirsttime enter\n");
+    var self = this;
+    var d = new Date();
+    var date = new Date().getDate();
+    var month = new Date().getMonth();
+
+    var dS = d.toString();
+    var year = dS.substring(11,15);
+ 
+    var flag = 0;
+    await axios({
+      method: 'GET',
+      url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+      headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+      }
+    }).then(function (response){ 
+      console.log("Test" ,response.data.placeData);
+      if(response.data.placeData.length == 0){
+        self.placeInfo = {"0" : {"0" : {"name" : "None"}}, "timeData" :{"updateTime" : year+'-'+month+'-'+date}};
+        console.log("Zero test ", self.placeInfo);
+      }else{
+        self.placeInfo = Object.entries(response.data.placeData).map(([key, val])=> ({
+          [key]: val
+        }));
+        self.placeInfo[self.placeInfo.length] = response.data.timeData;
+        if(self.placeInfo.length == 5){
+          flag = 1;
+          self.koreaGridSemi();
+          console.log("Over hundred");
+        }
+      }   
+      console.log("getSchoolZoneByPlaceFirstTime ",self.placeInfo.length);
+    }).then(function(response){
+      if(flag==0)
+        self.storeData(self.gridX*10+self.gridY);
+    }).catch(function (error) {
+      console.log("can not get getSchoolZoneByPlaceFirstTime\n")
+    });
+  };
+
+
+getSchoolZoneByPlace = async () => {
+  console.log("getschoolzonebyplace enter\n");
+  var self = this;
+    var d = new Date();
+    var date = new Date().getDate();
+    var month = new Date().getMonth();
+
+    var dS = d.toString();
+    var year = dS.substring(11,15);
+    console.log("Params are "+year+'-'+month+'-'+date);
+
+    var updateTime = self.placeInfo.length;
+
+    var flag = 0;
+    await axios({
+      method: 'GET',
+      url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+      headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+      }
+    }).then(function (response){ 
+      /*
+      //시간 타입 맞추는거 보완
+      console.log("shit?");
+      console.log(self.placeInfo["timeData"].updateTime);
+      console.log(response.data.timeData.updateTime);
+      */
+     console.log(response.data);
+      if(self.placeInfo["timeData"] != response.data.timeData.updateTime){
+
+        console.log("Test" ,response.data.placeData);
+        if(response.data.placeData.length == 0){
+          self.placeInfo = {"0" : {"0" : {"name" : "None"}}, "timeData" :{"updateTime" : year+'-'+month+'-'+date}};
+          console.log("Zero test ", self.placeInfo);
+        }else{
+          self.placeInfo = Object.entries(response.data.placeData).map(([key, val])=> ({
+            [key]: val
+          }));
+          self.placeInfo[self.placeInfo.length] = response.data.timeData;
+          if(self.placeInfo.length == 5){
+            flag = 1;
+            self.koreaGridSemi();
+            console.log("Over hundred");
+          }
+        }   
+        console.log("getSchoolZoneByPlaceFirstTime ",self.placeInfo.length);
+      }
+    }).then(function(response){
+      if(flag==0)
+        self.storeData(self.gridX*10+self.gridY);
+    }) .catch(function (error) {
+        console.log("can not get getSchoolZoneByPlace\n",error)
+    });
+  
+
+  };
+
+  storeData = async (key) => {
+    var self = this;
+    try {
+      console.log("storedata ",key,self.placeInfo[0])
+      const jsonValue = JSON.stringify(self.placeInfo)
+      await AsyncStorage.setItem(key.toString(), jsonValue)
+      console.log("json values are ",self.placeInfo[0]);
+    } catch (e) {
+      Alert.alert("Error occur in store data");
+    }
+  };
+
+    getData = async (grid) => {
+      var self = this;
+      try {
+        const value = await AsyncStorage.getItem(grid.toString());
+        console.log("getData ", value, "getdatadone");
+        if(value !== null) {
+          self.placeInfo = JSON.parse(value);
+        }else{
+          self.placeInfo=[];
+        }
+      } catch(e) {
+        console.log("Error occur in get data",e);
+        // error reading value
+      }
+    };
+
   //앱 활성화
   toggleSwitch = value =>{this.setState({ switchValue: value})};
   //거리 계산 함수
@@ -205,58 +425,7 @@ export default class extends React.Component {
          : console.log();
   }
 
-  getSchoolZoneByPlaceFirstTime = async (place) => {
-  var self = this;
-  //console.log("Address is :" ,place);
-  axios({
-    method: 'GET',
-    url: "https://capstone18z.herokuapp.com/rest/schoolzone",//현재 place를 넣으면 404가 나옴
-    headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-          "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
-      }
-  }).then(function (response) {
-    console.log("getSchoolZoneByPlaceFirstTimeEarly ", self.placeInfo);
-    self.placeInfo = Object.entries(response.data).map(([key, val])=> ({
-      [key]: val
-    }));
-    //this.storeData("충청북도 충주시 수안보면");
-    console.log("getSchoolZoneByPlaceFirstTime ",self.placeInfo[0]);
-    //this.storeData("충청북도 충주시 수안보면");
-  }).then(()=>{
-    this.storeData("충청북도 충주시 수안보면");
-  }) .catch(function (error) {
-      //console.log("can not get getSchoolZoneByPlaceFirstTime\n")
-    //console.log(error);
-  });
-
-};
-getSchoolZoneByPlace = async (place) => {
-  var self = this;
-  //console.log("IN getschoolzonebyplace",place);
-  //var date = new Date().getDate();
-  //var month = new Date().getMonth();
-  //var year = new Date().getFullYear();
-  //console.log("Params are "+year+'-'+month+'-'+date)
-  axios({
-    method: 'GET',
-    url: "https://capstone18z.herokuapp.com/rest/schoolzone/",
-    headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-          "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
-      },
-    params: {
-      //updateDate: 2021+'-'+month+'-'+date
-    }
-  }).then(function (response) {
-    self.placeInfo = response.data
-    //console.log("getSchoolZoneByPlace ",self.placeInfo)
-  }) .catch(function (error) {
-      //console.log("can not get getSchoolZoneByPlace\n")
-    //console.log(error);
-  });
-
-};
+  
 
   getLocation = async () => {
 
@@ -291,38 +460,7 @@ getSchoolZoneByPlace = async (place) => {
     }
   };
 
-  storeData = async (key) => {//키 값은 시, 구 이름으로
-      var self = this;
-      //console.log("In sotre data key is:",key);
-      //console.log("In store data placeinfo :",this.placeInfo);
-      try {
-        const jsonValue = JSON.stringify(this.placeInfo)
-        await AsyncStorage.setItem(key, jsonValue)
-        //console.log("json values are ",jsonValue);
-      } catch (e) {
-        //Alert.alert("Error occur in store data");
-      }
-    }
-
-    getData = async (place) => {
-      try {
-        const value = await AsyncStorage.getItem(place);
-        //console.log("get data check ",place);
-        //console.log("get data check2",value);
-        if(value !== null) {
-          this.placeInfo = JSON.parse(value);
-          // value previously stored
-          //this.setState({savetest : JSON.parse(value)});
-          //Alert.alert(a);
-        }else{
-          this.placeInfo=[];
-        }
-      } catch(e) {
-        //console.log("Error occur in get data",e);
-        // error reading value
-      }
-    }
-
+ 
     EnterPushNotification = async (name) => {
       console.log("enter test");
             await Notifications.scheduleNotificationAsync({
@@ -363,7 +501,7 @@ getSchoolZoneByPlace = async (place) => {
           {this.state.switchValue && this.state.inPlace ?
             <View>
               <View style={styles.alert_place}>
-                <Text style={styles.placeName}>"와랩 유치원"</Text>
+                <Text style={styles.placeName}>"{this.placeInfo[0][0].name}"</Text>
                 <Text style={styles.text}>어린이 보호 구역입니다.</Text>
               </View>
               <View style={styles.alert_num}>
