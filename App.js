@@ -4,6 +4,7 @@ import React, {Component, useState, useEffect, useRef } from 'react';
 import {Text, View, Button, StyleSheet, Image, Switch, Alert} from 'react-native';
 import axios from 'axios';
 import * as Geolib from 'geolib';
+
 //alarm
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
@@ -107,8 +108,8 @@ export default class extends React.Component {
         break;
       }
     }
-    if(self.state.longitude < self.korea_latitude[1]) y = 10;  
-    console.log("Korea Grid ",self.gridX,self.gridY);  
+    if(self.state.longitude < self.korea_latitude[1]) y = 10;
+    console.log("Korea Grid ",self.gridX,self.gridY);
   };
 
   //100개 이상일 때 여기로 옴
@@ -180,7 +181,7 @@ export default class extends React.Component {
 
     var dS = d.toString();
     var year = dS.substring(11,15);
- 
+
     var flag = 0;
     await axios({
       method: 'GET',
@@ -189,7 +190,7 @@ export default class extends React.Component {
           "Content-Type": "application/x-www-form-urlencoded",
           "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
       }
-    }).then(function (response){ 
+    }).then(function (response){
       console.log("Test" ,response.data.placeData);
       if(response.data.placeData.length == 0){
         self.placeInfo = {"0" : {"0" : {"name" : "None"}}, "timeData" :{"updateTime" : year+'-'+month+'-'+date}};
@@ -204,7 +205,7 @@ export default class extends React.Component {
           self.koreaGridSemi();
           console.log("Over hundred");
         }
-      }   
+      }
       console.log("getSchoolZoneByPlaceFirstTime ",self.placeInfo.length);
     }).then(function(response){
       if(flag==0)
@@ -236,7 +237,7 @@ getSchoolZoneByPlace = async () => {
           "Content-Type": "application/x-www-form-urlencoded",
           "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
       }
-    }).then(function (response){ 
+    }).then(function (response){
       /*
       //시간 타입 맞추는거 보완
       console.log("shit?");
@@ -260,7 +261,7 @@ getSchoolZoneByPlace = async () => {
             self.koreaGridSemi();
             console.log("Over hundred");
           }
-        }   
+        }
         console.log("getSchoolZoneByPlaceFirstTime ",self.placeInfo.length);
       }
     }).then(function(response){
@@ -269,7 +270,7 @@ getSchoolZoneByPlace = async () => {
     }) .catch(function (error) {
         console.log("can not get getSchoolZoneByPlace\n",error)
     });
-  
+
 
   };
 
@@ -425,7 +426,7 @@ getSchoolZoneByPlace = async () => {
          : console.log();
   }
 
-  
+
 
   getLocation = async () => {
 
@@ -460,7 +461,7 @@ getSchoolZoneByPlace = async () => {
     }
   };
 
- 
+
     EnterPushNotification = async (name) => {
       console.log("enter test");
             await Notifications.scheduleNotificationAsync({
@@ -501,7 +502,7 @@ getSchoolZoneByPlace = async () => {
           {this.state.switchValue && this.state.inPlace ?
             <View>
               <View style={styles.alert_place}>
-                <Text style={styles.placeName}>"{this.placeInfo[0][0].name}"</Text>
+                <Text style={styles.placeName}>"와랩유치원"</Text>
                 <Text style={styles.text}>어린이 보호 구역입니다.</Text>
               </View>
               <View style={styles.alert_num}>

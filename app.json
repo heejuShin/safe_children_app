@@ -22,10 +22,12 @@
         "UIBackgroundModes": [
           "location",
           "fetch"
-        ],
+        ]
       },
+      "bundleIdentifier": "com.walab.18z"
     },
     "android": {
+      "package": "com.yourcompany.yourname",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
