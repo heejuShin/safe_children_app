@@ -30,14 +30,14 @@ export default class extends React.Component {
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
     //this.getLocation(); //지속적으로 정보 받아옴
     await this.getLocation();
-    //await this.koreaGrid();
-    /*await this.getData(this.gridX*10 + this.gridY);
+    await this.koreaGrid();
+    await this.getData(this.gridX*10 + this.gridY);
     if(this.placeInfo.length != 0){ // 현재 시,구 정보가 내장되어 있을 경우
       await this.getSchoolZoneByPlace();
     }else{ // 처음가보는 곳일 경우
       await this.getSchoolZoneByPlaceFirstTime(); //날짜가 없어야함
       //console.log("INFO is ", this.placeInfo);
-    }*/
+    }
     //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
     await this.getSchoolZoneByPlaceFirstTime();
   }
@@ -129,6 +129,12 @@ export default class extends React.Component {
     var pre_gridX = self.gridX;
     var pre_gridY = self.gridY;
 
+    var d = new Date();
+    var date = new Date().getDate();
+    var month = new Date().getMonth();
+    var dS = d.toString();
+    var year = dS.substring(11,15);
+
     for(let i=0;i<9;i++){
       if(self.state.longitude < self.korea_longitude[0]+per_x*i){
         self.gridX = i;
@@ -146,6 +152,7 @@ export default class extends React.Component {
 
     console.log(self.placeInfo);
     console.log(pre_gridX, " ", pre_gridY, " " ,self.gridX," ", self.gridY," ", aendX["endX"]," ", aendY["endY"]," ", astartX.startX," ", astartY["startY"]);
+    self.getData(pre_gridX*1000+ pre_gridY*100 + self.gridX*10 + self.gridY);
 
     await axios({
         method: 'GET',
@@ -161,15 +168,25 @@ export default class extends React.Component {
           startX: astartX.startX,
         }
       }).then(function (response){
-        console.log("Semi start ", response.data);
-        self.placeInfo = Object.entries(response.data.placeData).map(([key, val])=> ({
-          [key]: val
-        }));
-        self.placeInfo[self.placeInfo.length] = response.data.timeData;
-        console.log("Semi ", self.placeInfo[0]);
-        console.log("semi ", self.placeInfo[self.placeInfo.length-1]);
+        console.log("Time is : ",self.placeInfo[self.placeInfo.length-1], response.data.timeData, self.placeInfo[self.placeInfo.length-1]== response.data.timeData)
+        if(self.placeInfo[self.placeInfo.length-1] == response.data.timeData){
+          console.log("Same Time! No Update")
+          console.log("Time is : ",self.placeInfo[self.placeInfo.length-1])
+        }
+        else if(response.data.placeData.length == 0){
+          self.placeInfo = {"0" : {"0" : {"name" : "None"}}, "timeData" :{"updateTime" : year+'-'+month+'-'+date}};
+          console.log("Zero test ", self.placeInfo);
+        }else{
+          console.log("Semi start ", response.data);
+          self.placeInfo = Object.entries(response.data.placeData).map(([key, val])=> ({
+            [key]: val
+          }));
+          self.placeInfo[self.placeInfo.length] = response.data.timeData;
+          console.log("Semi ", self.placeInfo[0]);
+          console.log("semi ", self.placeInfo[self.placeInfo.length-1]);
+        }
       }).then(function (response){
-        self.storeData(pre_gridX*10 + pre_gridY);
+        self.storeData(pre_gridX*1000+ pre_gridY*100 + self.gridX*10 + self.gridY);
         console.log("Semi then after");
       }).catch(function (error) {
         console.log("can not get KoreaGridSemi\n",error)
@@ -300,6 +317,7 @@ getSchoolZoneByPlace = async () => {
         }else{
           self.placeInfo=[];
         }
+        //console.log("getData length : ",self.placeInfo[0][0]);
       } catch(e) {
         console.log("Error occur in get data",e);
         // error reading value
@@ -315,7 +333,9 @@ getSchoolZoneByPlace = async () => {
   };
   //거리 계산 함수
   calculateDistance = async (latitudeC, longitudeC) => {
+
         for(var i=0; i<this.placeInfo.length-1; i++){
+          console.log("Calculate Distance in placeInfo : ", this.placeInfo[i][i])
           let distance = Geolib.getDistance(
             {
               latitude: latitudeC,
