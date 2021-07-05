@@ -317,10 +317,10 @@ getSchoolZoneByPlace = async () => {
         for(var i=0; i<this.placeInfo.length; i++){
           let distance = Geolib.getDistance(
             {
-              //latitude: latitudeC,
-              //longitude: longitudeC,
-              latitude: 37.80098,
-              longitude: 126.25689, //지석초교 데이타
+              latitude: latitudeC,
+              longitude: longitudeC,
+              //latitude: 37.80098,
+              //longitude: 126.25689, //지석초교 데이타
             },
             {
               latitude: this.placeInfo[i][i].latitude, //여기에 비교 값
@@ -443,7 +443,7 @@ getSchoolZoneByPlace = async () => {
            //console.log(error);
          });
          (this.state.last_cnt != this.state.cnt)
-         ? await this.NumPushNotification("와랩유치원", this.state.cnt)
+         ? await this.NumPushNotification(this.state.placeName, this.state.cnt)
          : console.log();
   }
 
@@ -537,7 +537,7 @@ getSchoolZoneByPlace = async () => {
           {this.state.switchValue && this.state.inPlace ?
             <View>
               <View style={styles.alert_place}>
-                <Text style={styles.placeName}>"와랩유치원"</Text>
+                <Text style={styles.placeName}>{this.state.placeName}</Text>
                 <Text style={styles.text}>어린이 보호 구역입니다.</Text>
               </View>
               <View style={styles.alert_num}>
