@@ -148,7 +148,7 @@ export default class extends React.Component {
 
     await axios({
         method: 'GET',
-        url: "http://walab.handong.edu:8080/safeChildren/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+        url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -188,7 +188,7 @@ export default class extends React.Component {
     var flag = 0;
     await axios({
       method: 'GET',
-      url: "http://walab.handong.edu:8080/safeChildren/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+      url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
       headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -235,7 +235,7 @@ getSchoolZoneByPlace = async () => {
     var flag = 0;
     await axios({
       method: 'GET',
-      url: "http://walab.handong.edu:8080/safeChildren/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+      url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
       headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -364,7 +364,7 @@ getSchoolZoneByPlace = async () => {
     var self = this;
     var getSetting = await axios({
             method: 'GET',
-            url: "http://walab.handong.edu:8080/safeChildren/rest/setting",
+            url: "https://capstone18z.herokuapp.com/rest/setting",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                  "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -392,7 +392,7 @@ getSchoolZoneByPlace = async () => {
     var self = this;
     axios({
             method: 'GET',
-            url: "http://walab.handong.edu:8080/safeChildren/rest/setting",
+            url: "https://capstone18z.herokuapp.com/rest/setting",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                  "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -410,7 +410,7 @@ getSchoolZoneByPlace = async () => {
     var self = this;
     axios({
            method: 'GET',
-           url: "http://walab.handong.edu:8080/safeChildren/rest/receiver/"+placeId,
+           url: "https://capstone18z.herokuapp.com/rest/receiver/"+placeId,
            headers: {
                "Content-Type": "application/x-www-form-urlencoded",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
@@ -429,7 +429,7 @@ getSchoolZoneByPlace = async () => {
     var self = this;
     axios({
            method: 'GET',
-           url: "http://walab.handong.edu:8080/safeChildren/rest/section/children/"+placeId,
+           url: "https://capstone18z.herokuapp.com/rest/section/children/"+placeId,
            headers: {
                "Content-Type": "application/x-www-form-urlencoded",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
