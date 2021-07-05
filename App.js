@@ -57,6 +57,7 @@ export default class extends React.Component {
     isFirstTimeOut: false, //이탈 알림용
     cnt: 0, //어린이 수
     last_cnt: 0, //지난 어린이 수 (변화용)
+    out: 0, //나간지 몇 초 됐는지
 
     //setting information
     open_api_update_date: null,
@@ -317,10 +318,10 @@ getSchoolZoneByPlace = async () => {
         for(var i=0; i<this.placeInfo.length-1; i++){
           let distance = Geolib.getDistance(
             {
-              //latitude: latitudeC,
-              //longitude: longitudeC,
-              latitude: 37.80098,
-              longitude: 126.25689, //지석초교 데이타
+              latitude: latitudeC,
+              longitude: longitudeC,
+              //latitude: 37.80098,
+              //longitude: 126.25689, //지석초교 데이타
             },
             {
               latitude: this.placeInfo[i][i].latitude, //여기에 비교 값
@@ -337,18 +338,24 @@ getSchoolZoneByPlace = async () => {
             this.setState({ isFirstTimeEnter : false});
             this.setState({ isFirstTimeOut : true});
             this.setState({ inPlace : true});
-            this.setState({ placeId : 15053});
-            //todo
+            this.setState({ placeId : this.placeInfo[i][i].id});
             this.setState({ placeName : this.placeInfo[i][i].name});
-            this.getNum(15053);
-            //this.getNum(this.state.placeId); //지속적으로 받아옴
+            this.getNum(this.state.placeId);
+            this.setState({ out : 0});
             break;
           }
           else{
-            this.state.isFirstTimeOut ? await this.outPushNotification(this.placeInfo[i][i].name) : console.log();
-            this.setState({ isFirstTimeOut : false});
-            this.setState({ isFirstTimeEnter : true});
-            this.setState({ inPlace : false});
+            if(this.state.out>5){
+              this.state.isFirstTimeOut ? await this.OutPushNotification(this.state.placeName) : console.log();
+              this.setState({ placeId : null});
+              this.setState({ placeName: null});
+              this.setState({ isFirstTimeOut : false});
+              this.setState({ isFirstTimeEnter : true});
+              this.setState({ inPlace : false});
+            }
+            else{
+              this.setState({ out : this.state.out + 1});
+            }
           }
         }
         //section 나갔는지 확인
@@ -428,7 +435,6 @@ getSchoolZoneByPlace = async () => {
   //어린이 숫자 받아오기 (300M안에서 계속)
   getNum = async (placeId) => {
     //todo
-    console.log("hello");
     var self = this;
     axios({
            method: 'GET',
@@ -438,16 +444,16 @@ getSchoolZoneByPlace = async () => {
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           //self.setState({last_cnt: cnt});
+           //self.setState({last_cnt: self.state.cnt});
            self.setState({cnt: parseInt(response.data)});
-           console.log("어린이 수 : ", response.data);
+           //console.log("어린이 수 : ", response.data);
          }) .catch(function (error) {
              console.log("[error] can not get children num.\n")
            console.log(error);
          });
-         (this.state.last_cnt != this.state.cnt)
+         /*(this.state.last_cnt != this.state.cnt)
          ? await this.NumPushNotification(this.state.placeName, this.state.cnt)
-         : console.log();
+         : console.log();*/
   }
 
 
@@ -572,12 +578,6 @@ getSchoolZoneByPlace = async () => {
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
             </View>}
           <View style={styles.test}>
-            <Button
-              title="알람 테스트"
-              onPress={async () => {
-                await this.EnterPushNotification("와랩 유치원", this.state.cnt);
-              }}
-            />
           </View>
         </View>
       );
