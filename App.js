@@ -333,7 +333,6 @@ getSchoolZoneByPlace = async () => {
   };
   //거리 계산 함수
   calculateDistance = async (latitudeC, longitudeC) => {
-
         for(var i=0; i<this.placeInfo.length-1; i++){
           console.log("Calculate Distance in placeInfo : ", this.placeInfo[i][i])
           let distance = Geolib.getDistance(
