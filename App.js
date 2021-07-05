@@ -317,10 +317,10 @@ getSchoolZoneByPlace = async () => {
         for(var i=0; i<this.placeInfo.length-1; i++){
           let distance = Geolib.getDistance(
             {
-              latitude: latitudeC,
-              longitude: longitudeC,
-              //latitude: 37.80098,
-              //longitude: 126.25689, //지석초교 데이타
+              //latitude: latitudeC,
+              //longitude: longitudeC,
+              latitude: 37.80098,
+              longitude: 126.25689, //지석초교 데이타
             },
             {
               latitude: this.placeInfo[i][i].latitude, //여기에 비교 값
@@ -337,10 +337,11 @@ getSchoolZoneByPlace = async () => {
             this.setState({ isFirstTimeEnter : false});
             this.setState({ isFirstTimeOut : true});
             this.setState({ inPlace : true});
+            this.setState({ placeId : 15053});
             //todo
-            this.setState({ placeId : this.placeInfo[i][i].id});
             this.setState({ placeName : this.placeInfo[i][i].name});
-            this.getNum(this.state.placeId); //지속적으로 받아옴
+            this.getNum(15053);
+            //this.getNum(this.state.placeId); //지속적으로 받아옴
             break;
           }
           else{
@@ -426,21 +427,23 @@ getSchoolZoneByPlace = async () => {
   }
   //어린이 숫자 받아오기 (300M안에서 계속)
   getNum = async (placeId) => {
+    //todo
+    console.log("hello");
     var self = this;
     axios({
            method: 'GET',
-           url: "https://capstone18z.herokuapp.com/rest/section/children/"+placeId,
+           url: "https://capstone18z.herokuapp.com/rest/children/placeId/"+placeId,
            headers: {
                "Content-Type": "application/x-www-form-urlencoded",
                 "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
              },
          }).then(function (response) {
-           self.setState({last_cnt: cnt});
+           //self.setState({last_cnt: cnt});
            self.setState({cnt: parseInt(response.data)});
            console.log("어린이 수 : ", response.data);
          }) .catch(function (error) {
-             //console.log("[error] can not get children num.\n")
-           //console.log(error);
+             console.log("[error] can not get children num.\n")
+           console.log(error);
          });
          (this.state.last_cnt != this.state.cnt)
          ? await this.NumPushNotification(this.state.placeName, this.state.cnt)
