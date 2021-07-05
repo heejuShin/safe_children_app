@@ -30,28 +30,31 @@ export default class extends React.Component {
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
     //this.getLocation(); //지속적으로 정보 받아옴
     await this.getLocation();
-    await this.koreaGrid();
-    await this.getData(this.gridX*10 + this.gridY);
+    //await this.koreaGrid();
+    /*await this.getData(this.gridX*10 + this.gridY);
     if(this.placeInfo.length != 0){ // 현재 시,구 정보가 내장되어 있을 경우
       await this.getSchoolZoneByPlace();
     }else{ // 처음가보는 곳일 경우
       await this.getSchoolZoneByPlaceFirstTime(); //날짜가 없어야함
       //console.log("INFO is ", this.placeInfo);
-    }
+    }*/
     //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
+    await this.getSchoolZoneByPlaceFirstTime();
   }
 
   state = {
     isLoading: true, //로딩페이지를 불러오기 위한 변수
     switchValue: false, //앱 활성화
-    inPlace: true, //스쿨존 안에 있는지 확인
+    inPlace: false, //스쿨존 안에 있는지 확인
     latitude: null, //현재 위도
     longitude: null, //현재 경도
-    placeId: 1, //school zone id
+    placeId: 15053, //school zone id
+    placeName: null,
     //sectionId: 10, //section id
     getReceiverInfo: false, //수신기 정보 받았는지
     getSectionInfo: false, //섹션 정보 받았는지
-    isFirstTimeEnter: true, //
+    isFirstTimeEnter: true, //진입 알림용
+    isFirstTimeOut: false, //이탈 알림용
     cnt: 0, //어린이 수
     last_cnt: 0, //지난 어린이 수 (변화용)
 
@@ -303,30 +306,48 @@ getSchoolZoneByPlace = async () => {
     };
 
   //앱 활성화
-  toggleSwitch = value =>{this.setState({ switchValue: value})};
+  toggleSwitch = value =>{
+    this.setState({ switchValue: value});
+    this.setState({ isFirstTimeOut : false});
+    this.setState({ isFirstTimeEnter : true});
+    this.setState({ inPlace : false});
+  };
   //거리 계산 함수
   calculateDistance = async (latitudeC, longitudeC) => {
-        //todo
         for(var i=0; i<this.placeInfo.length; i++){
-          console.log("==>"+this.placeInfo[i][i].latitude+"&"+this.placeInfo[i][i].longitude);
           let distance = Geolib.getDistance(
             {
-              latitude: latitudeC,
-              longitude: longitudeC,
+              //latitude: latitudeC,
+              //longitude: longitudeC,
+              latitude: 37.80098,
+              longitude: 126.25689, //지석초교 데이타
             },
             {
-              latitude: this.state.latitude, //여기에 비교 값
-              longitude: this.state.longitude, //여기에 비교 값
+              latitude: this.placeInfo[i][i].latitude, //여기에 비교 값
+              longitude: this.placeInfo[i][i].longitude, //여기에 비교 값
           });
-          if(distance<500){
+          //console.log("->"+this.placeInfo[i][i].latitude+ " & " + this.placeInfo[i][i].longitude+ "->" + distance);
+          //if(distance<500){
             //this.state.getSectionInfo ? console.log() : //this.getSectionByPlace(this.state.placeId); //업데이트시만 받아옴
-            this.state.getReceiverInfo ? console.log() : this.getReceiverByPlace(this.state.placeId); //업데이트시만 받아옴
-          }
+            //this.state.getReceiverInfo ? console.log() : this.getReceiverByPlace(this.state.placeId); //업데이트시만 받아옴
+          //}
           if(distance<300) {
-            this.state.isFirstTimeEnter ? await this.EnterPushNotification("와랩유치원") : console.log();
-            this.setState({ isFirstTimeEnter : false})
+            //console.log("->"+this.placeInfo[i][i].name);
+            this.state.isFirstTimeEnter ? await this.EnterPushNotification(this.placeInfo[i][i].name) : console.log();
+            this.setState({ isFirstTimeEnter : false});
+            this.setState({ isFirstTimeOut : true});
+            this.setState({ inPlace : true});
+            //todo
+            this.setState({ placeId : this.placeInfo[i][i].id});
+            this.setState({ placeName : this.placeInfo[i][i].name});
             this.getNum(this.state.placeId); //지속적으로 받아옴
             break;
+          }
+          else{
+            this.state.isFirstTimeOut ? await this.outPushNotification(this.placeInfo[i][i].name) : console.log();
+            this.setState({ isFirstTimeOut : false});
+            this.setState({ isFirstTimeEnter : true});
+            this.setState({ inPlace : false});
           }
         }
         //section 나갔는지 확인
@@ -450,9 +471,10 @@ getSchoolZoneByPlace = async () => {
           (this.state.switchValue) ?
           this.calculateDistance(loc.coords.latitude, loc.coords.longitude)
           : console.log() ;
-          (this.state.switchValue) ?
+          this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude});
+          /*(this.state.switchValue) ?
           this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude})
-          : console.log() ;
+          : console.log() ;*/
         }
       );
     } catch (error) {
@@ -473,6 +495,19 @@ getSchoolZoneByPlace = async () => {
               trigger: { seconds: 1 },
             });
             await console.log("enter done");
+    }
+
+    OutPushNotification = async (name) => {
+      console.log("out test");
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "알림 📬",
+                body: name+'을 이탈했습니다',
+                data: { data: 'goes here' },
+              },
+              trigger: { seconds: 1 },
+            });
+            await console.log("out done");
     }
 
     NumberPushNotification = async (name, num) => {
