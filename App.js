@@ -31,13 +31,13 @@ export default class extends React.Component {
     //this.getLocation(); //지속적으로 정보 받아옴
     await this.getLocation();
     await this.koreaGrid();
-    await this.getData(this.gridX*10 + this.gridY);
+    /*await this.getData(this.gridX*10 + this.gridY);
     if(this.placeInfo.length != 0){ // 현재 시,구 정보가 내장되어 있을 경우
       await this.getSchoolZoneByPlace();
     }else{ // 처음가보는 곳일 경우
       await this.getSchoolZoneByPlaceFirstTime(); //날짜가 없어야함
       //console.log("INFO is ", this.placeInfo);
-    }
+    }*/
     //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
     await this.getSchoolZoneByPlaceFirstTime();
   }
@@ -98,15 +98,19 @@ export default class extends React.Component {
   //위치로 그리드 구하는 함수
   koreaGrid = async () => {
     var self = this;
+
     for(let i=0;i<9;i++){
+      console.log(self.state.longitude, " ", self.korea_longitude[0]+self.per_x*i)
       if(self.state.longitude < self.korea_longitude[0]+self.per_x*i){
+
         self.gridX = i;
         break;
       }
       if(i==8) self.gridX = i;
     }
-
+    console.log("\n\n")
     for(let i=0;i<9;i++){
+      console.log(self.state.latitude, " ", self.korea_latitude[0]-self.per_y*i)
       if(self.korea_latitude[0]- self.per_y*i < self.state.latitude ){
         self.gridY = i;
         break;
@@ -154,18 +158,24 @@ export default class extends React.Component {
     console.log(pre_gridX, " ", pre_gridY, " " ,self.gridX," ", self.gridY," ", aendX["endX"]," ", aendY["endY"]," ", astartX.startX," ", astartY["startY"]);
     self.getData(pre_gridX*1000+ pre_gridY*100 + self.gridX*10 + self.gridY);
 
+
     await axios({
         method: 'GET',
-        url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+        //url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+        url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/3/6",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
         },
         params : {
-          endY: aendY["endY"],
-          endX: aendX["endX"],
-          startY: astartY.startY,
-          startX: astartX.startX,
+          //endY: aendY["endY"],
+          //endX: aendX["endX"],
+          //startY: astartY.startY,
+          //startX: astartX.startX,
+          endY: 36.003,
+          endX: 129.64999999999998,
+          startY: 36.457,
+          startX: 129.21,
         }
       }).then(function (response){
         console.log("Time is : ",self.placeInfo[self.placeInfo.length-1], response.data.timeData, self.placeInfo[self.placeInfo.length-1]== response.data.timeData)
@@ -334,7 +344,7 @@ getSchoolZoneByPlace = async () => {
   //거리 계산 함수
   calculateDistance = async (latitudeC, longitudeC) => {
         for(var i=0; i<this.placeInfo.length-1; i++){
-          console.log("Calculate Distance in placeInfo : ", this.placeInfo[i][i])
+          //console.log("Calculate Distance in placeInfo : ", this.placeInfo[i][i])
           let distance = Geolib.getDistance(
             {
               latitude: latitudeC,
@@ -410,7 +420,7 @@ getSchoolZoneByPlace = async () => {
                 self.setState({clean_date: response.data[i].value});
               }
           }) .catch(function (error) {
-              //console.log("can not get school zone info\n")
+              console.log("can not get school zone info\n")
             //console.log(error);
           });
   }
