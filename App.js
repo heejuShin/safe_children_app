@@ -31,15 +31,15 @@ export default class extends React.Component {
     //this.getLocation(); //지속적으로 정보 받아옴
     await this.getLocation();
     await this.koreaGrid();
-    /*await this.getData(this.gridX*10 + this.gridY);
+    await this.getData(this.gridX*10 + this.gridY);
     if(this.placeInfo.length != 0){ // 현재 시,구 정보가 내장되어 있을 경우
       await this.getSchoolZoneByPlace();
     }else{ // 처음가보는 곳일 경우
       await this.getSchoolZoneByPlaceFirstTime(); //날짜가 없어야함
       //console.log("INFO is ", this.placeInfo);
-    }*/
+    }
     //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
-    await this.getSchoolZoneByPlaceFirstTime();
+    //await this.getSchoolZoneByPlaceFirstTime();
   }
 
   state = {
@@ -91,14 +91,16 @@ export default class extends React.Component {
   korea_latitude = [38.183, 34.277];
   per_x = (129.64 - 125.86) / 9.0;
   per_y = (38.183 - 34.277) / 9.0;
+
   gridX = 0;
   gridY = 0;
   gridSemi = [];
 
   //위치로 그리드 구하는 함수
   koreaGrid = async () => {
-    var self = this;
 
+    var self = this;
+    console.log("per_x : ", self.per_x, "per_y : ",self.per_y);
     for(let i=0;i<9;i++){
       console.log(self.state.longitude, " ", self.korea_longitude[0]+self.per_x*i)
       if(self.state.longitude < self.korea_longitude[0]+self.per_x*i){
@@ -112,7 +114,7 @@ export default class extends React.Component {
     for(let i=0;i<9;i++){
       console.log(self.state.latitude, " ", self.korea_latitude[0]-self.per_y*i)
       if(self.korea_latitude[0]- self.per_y*i < self.state.latitude ){
-        self.gridY = i;
+        self.gridY = i-1;
         break;
       }
     }
@@ -139,7 +141,10 @@ export default class extends React.Component {
     var dS = d.toString();
     var year = dS.substring(11,15);
 
+    console.log("per_x : ", per_x, "per_y : ",per_y);
+
     for(let i=0;i<9;i++){
+      console.log(self.state.longitude, " ", self.korea_longitude[0]+self.per_x*i)
       if(self.state.longitude < self.korea_longitude[0]+per_x*i){
         self.gridX = i;
         break;
@@ -148,6 +153,7 @@ export default class extends React.Component {
     }
 
     for(let i=0;i<9;i++){
+      console.log(self.state.latitude, " ", self.korea_latitude[0]-self.per_y*i)
       if(self.korea_latitude[0]- per_y*i < self.state.latitude ){
         self.gridY = i;
         break;
