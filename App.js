@@ -167,21 +167,22 @@ export default class extends React.Component {
 
     await axios({
         method: 'GET',
-        //url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
-        url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/3/6",
+        url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/"+self.gridX+'/'+self.gridY,// 몇 번째 그리드인지 보내기
+        //url: "https://capstone18z.herokuapp.com/rest/schoolzone/grid/3/6",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
         },
         params : {
-          //endY: aendY["endY"],
-          //endX: aendX["endX"],
-          //startY: astartY.startY,
-          //startX: astartX.startX,
-          endY: 36.003,
+          endY: aendY["endY"],
+          endX: aendX["endX"],
+          startY: astartY.startY,
+          startX: astartX.startX,
+
+          /*endY: 36.003,
           endX: 129.64999999999998,
           startY: 36.457,
-          startX: 129.21,
+          startX: 129.21, -> 와랩 유치원 정보*/
         }
       }).then(function (response){
         console.log("Time is : ",self.placeInfo[self.placeInfo.length-1], response.data.timeData, self.placeInfo[self.placeInfo.length-1]== response.data.timeData)
