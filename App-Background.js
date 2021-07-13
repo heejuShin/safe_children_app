@@ -3,6 +3,8 @@ import * as Location from "expo-location";
 import React, {Component, useState, useEffect, useRef } from 'react';
 import {Text, View, Button, StyleSheet, Image, Switch, Alert} from 'react-native';
 import axios from 'axios';
+import * as BackgroundFetch from 'expo-background-fetch';
+import * as TaskManager from 'expo-task-manager';
 import * as Geolib from 'geolib';
 
 //alarm
@@ -14,6 +16,116 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { styles } from './Styles';
 
+//background -> global scope
+const BACKGROUND_FETCH_TASK = 'background-fetch';
+TaskManager.defineTask(BACKGROUND_FETCH_TASK, async (self) => {
+
+  getLocationBackground();
+  getNumBackground();
+  //await App.getLocation();
+  //await this.getLocation();
+  const now = Date.now();
+
+  console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
+
+  // Be sure to return the successful result type!
+  return BackgroundFetch.Result.NewData;
+});
+
+getLocationBackground = async () => {
+  console.log("checking");
+    //await Location.requestForegroundPermissionsAsync();
+    const {
+      coords: { latitude, longitude }
+    } = await Location.getCurrentPositionAsync();
+    this.setState({ isLoading: false });
+    this.setState({ latitude: latitude, longitude: longitude});
+    let location = await Location.watchPositionAsync(
+      {accuracy:Location.Accuracy.High, timeInterval: 5000, distanceInterval: 0},
+      (loc) => {
+        console.log(
+          `${new Date(Date.now()).toLocaleString()}:`+ loc.coords.latitude +" & "+ loc.coords.longitude
+        );
+        /*(this.state.switchValue) ?
+        this.calculateDistance(loc.coords.latitude, loc.coords.longitude)
+        : console.log() ;
+        this.setState({latitude: loc.coords.latitude, longitude: loc.coords.longitude});*/
+      }
+    );
+};
+
+function getNumBackground(){
+  axios({
+     method: 'GET',
+     //url: "https://capstone18z.herokuapp.com/rest/children/placeId/"+placeId,
+     url: "https://capstone18z.herokuapp.com/rest/children/placeId/15053",
+     headers: {
+         "Content-Type": "application/x-www-form-urlencoded",
+          "content-type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+       },
+   }).then(function (response) {
+     //self.setState({last_cnt: self.state.cnt});
+     console.log("background children : "+ response.data);
+     NumberPushNotification("와랩 유치원", parseInt(response.data));
+     //self.setState({cnt: parseInt(response.data)});
+     //console.log("어린이 수 : ", response.data);
+   }) .catch(function (error) {
+       console.log("[error] can not get children num.\n")
+     console.log(error);
+   });
+}
+  EnterPushNotification = async (name) => {
+    console.log("enter test");
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: "알림 📬",
+              body: name+'에 진입했습니다',
+              data: { data: 'goes here' },
+            },
+            trigger: { seconds: 1 },
+          });
+          await console.log("enter done");
+  }
+
+  OutPushNotification = async (name) => {
+    console.log("out test");
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: "알림 📬",
+              body: name+'을 이탈했습니다',
+              data: { data: 'goes here' },
+            },
+            trigger: { seconds: 1 },
+          });
+          await console.log("out done");
+  }
+
+  NumberPushNotification = async (name, num) => {
+    console.log("num test");
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: name+ " 📬",
+        body: '어린이가 '+num+'명 감지됩니다',
+        data: { data: 'goes here' },
+      },
+      trigger: { seconds: 0 },
+    });
+    await console.log("num done");
+
+  }
+
+
+
+//register task
+async function registerBackgroundFetchAsync() {
+  console.log("background task start");
+  return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+    minimumInterval: 1, //60 * 15, // 15 minutes
+    stopOnTerminate: false, // android only,
+    startOnBoot: true, // android only
+  });
+}
+
 //alarm
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -23,9 +135,12 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export default class extends React.Component {
+//export default class extends React.Component{
+class App extends Component {
 
   async componentDidMount() {
+    var self = this;
+    await registerBackgroundFetchAsync();
     this.placeInfo = [];
     var getSetting = await this.getSettingInfo(); //setting 정보를 받아옴
     //this.getLocation(); //지속적으로 정보 받아옴
@@ -38,8 +153,6 @@ export default class extends React.Component {
       await this.getSchoolZoneByPlaceFirstTime(); //날짜가 없어야함
       //console.log("INFO is ", this.placeInfo);
     }
-    //this.getPlaceInfo(); //스쿨존 정보를 받아옴 TODO -> 거리에 따른 정보를 받아오게
-    //await this.getSchoolZoneByPlaceFirstTime();
   }
 
   state = {
@@ -498,6 +611,7 @@ getSchoolZoneByPlace = async () => {
 
     try {
       await Location.requestForegroundPermissionsAsync();
+      await Location.requestBackgroundPermissionsAsync();
       const {
         coords: { latitude, longitude }
       } = await Location.getCurrentPositionAsync();
@@ -612,6 +726,7 @@ getSchoolZoneByPlace = async () => {
               </View>
             </View>
           : <View style={{ flexGlow: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Button title="백그라운드 테스트" onPress={async ()=> await registerBackgroundFetchAsync() /*await Alert.alert("test")*/}></Button>
             </View>}
           <View style={styles.test}>
           </View>
@@ -619,4 +734,5 @@ getSchoolZoneByPlace = async () => {
       );
   }
 }
+export default App;
 //const styles = Function.sheet;
